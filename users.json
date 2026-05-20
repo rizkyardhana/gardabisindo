@@ -1,0 +1,26 @@
+[
+  {
+    "email": "admin@garda.com",
+    "password": "password123",
+    "role": "admin",
+    "name": "Admin GARDA",
+    "region": "Nasional",
+    "bio": "Administrator platform Garda BISINDO."
+  },
+  {
+    "email": "informan@garda.com",
+    "password": "password123",
+    "role": "informant",
+    "name": "Rizki Ardhana",
+    "region": "Jakarta Selatan",
+    "bio": "Saya seorang aktivis Tuli yang berdedikasi untuk mendokumentasikan kosa isyarat daerah Jakarta agar tidak terlupakan oleh sejarah perkembangan teknologi."
+  },
+  {
+    "name": "Rizky Ardhana",
+    "email": "gardabisindo.id@gmail.com",
+    "region": "Yogyakarta",
+    "password": "123456789",
+    "role": "admin",
+    "bio": "Saya seorang Admin di platform Garda BISINDO."
+  }
+]

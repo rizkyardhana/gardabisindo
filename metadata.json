@@ -1,0 +1,8 @@
+{
+  "name": "Remix: GARDA BISINDO",
+  "description": "Gerakan Arsip \u0026 Dokumentasi BISINDO - Platform Digital Pelestarian Bahasa Isyarat Indonesia",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
