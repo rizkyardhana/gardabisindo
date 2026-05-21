@@ -51,9 +51,25 @@ export function SignCard({ sign, className }: SignCardProps) {
               </span>
             </div>
             
-            <p className="text-slate-500 text-sm line-clamp-2 mb-4 leading-relaxed">
+            <p className="text-slate-500 text-sm line-clamp-2 mb-3 leading-relaxed">
               {sign.description}
             </p>
+
+            {/* Visual parameters */}
+            {(sign.handshape || sign.location) && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {sign.handshape && (
+                  <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-150 px-2 py-0.5 rounded-full font-semibold">
+                    ✋ {sign.handshape}
+                  </span>
+                )}
+                {sign.location && (
+                  <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-150 px-2 py-0.5 rounded-full font-semibold">
+                    📍 {sign.location}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

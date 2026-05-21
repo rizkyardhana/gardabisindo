@@ -16,6 +16,44 @@ import { RequireAuth, RequireRole } from './routes/RequireAuth';
 
 export default function App() {
   useEffect(() => {
+    const applyAccessibility = () => {
+      try {
+        const saved = localStorage.getItem('user_settings');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          
+          // High Contrast
+          if (parsed.highContrast) {
+            document.documentElement.classList.add('high-contrast');
+          } else {
+            document.documentElement.classList.remove('high-contrast');
+          }
+          
+          // Text Size
+          document.documentElement.classList.remove('text-size-large', 'text-size-xlarge');
+          if (parsed.textSize === 'large') {
+            document.documentElement.classList.add('text-size-large');
+          } else if (parsed.textSize === 'xlarge') {
+            document.documentElement.classList.add('text-size-xlarge');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to apply accessibility settings:', e);
+      }
+    };
+
+    applyAccessibility();
+
+    window.addEventListener('accessibilityUpdate', applyAccessibility);
+    window.addEventListener('storage', applyAccessibility);
+
+    return () => {
+      window.removeEventListener('accessibilityUpdate', applyAccessibility);
+      window.removeEventListener('storage', applyAccessibility);
+    };
+  }, []);
+
+  useEffect(() => {
     const updateFavicon = () => {
       const img = new Image();
       img.crossOrigin = 'anonymous';

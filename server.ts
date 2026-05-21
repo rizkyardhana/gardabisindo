@@ -7,19 +7,28 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-async function startServer() {
+export async function createServer() {
   const app = express();
-  const PORT = 3000;
 
   app.use(express.json());
   
   // Serve uploaded videos statically
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  if (!fs.existsSync(path.join(process.cwd(), "public"))) {
-    fs.mkdirSync(path.join(process.cwd(), "public"));
+  const uploadDir = process.env.VERCEL
+    ? path.join("/tmp", "uploads")
+    : path.join(process.cwd(), "public", "uploads");
+
+  if (process.env.VERCEL) {
+    if (!fs.existsSync("/tmp")) {
+      fs.mkdirSync("/tmp");
+    }
+  } else {
+    if (!fs.existsSync(path.join(process.cwd(), "public"))) {
+      fs.mkdirSync(path.join(process.cwd(), "public"));
+    }
   }
+
   if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
+    fs.mkdirSync(uploadDir, { recursive: true });
   }
   app.use("/uploads", express.static(uploadDir));
 
@@ -56,7 +65,9 @@ async function startServer() {
   });
 
   // Persistent user database using a JSON file to prevent loss on server restarts
-  const USERS_FILE = path.join(process.cwd(), "users.json");
+  const USERS_FILE = process.env.VERCEL 
+    ? path.join("/tmp", "users.json")
+    : path.join(process.cwd(), "users.json");
 
   function loadUsers() {
     const defaultUsers = [
@@ -241,9 +252,14 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  return app;
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  const PORT = 3000;
+  createServer().then(app => {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  });
+}

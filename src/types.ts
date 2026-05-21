@@ -10,6 +10,8 @@ export interface Sign {
   likes: number;
   bookmarks: number;
   createdAt: string;
+  handshape?: string;
+  location?: string;
 }
 
 export interface Informant {

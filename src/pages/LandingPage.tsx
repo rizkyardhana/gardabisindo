@@ -103,6 +103,57 @@ const REGIONAL_INFO = [
   }
 ];
 
+const REGION_THEMES: Record<string, { text: string; bg: string; border: string; badge: string; accent: string; dot: string }> = {
+  sumatera: {
+    text: 'text-cyan-600',
+    bg: 'bg-cyan-50/40',
+    border: 'border-cyan-150',
+    badge: 'bg-cyan-50 border-cyan-200 text-cyan-700',
+    accent: 'bg-cyan-500',
+    dot: 'bg-cyan-500 ring-cyan-400'
+  },
+  jawa: {
+    text: 'text-rose-600',
+    bg: 'bg-rose-50/40',
+    border: 'border-rose-150',
+    badge: 'bg-rose-50 border-rose-200 text-rose-700',
+    accent: 'bg-rose-500',
+    dot: 'bg-red-500 ring-red-400'
+  },
+  kalimantan: {
+    text: 'text-emerald-600',
+    bg: 'bg-emerald-50/40',
+    border: 'border-emerald-150',
+    badge: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+    accent: 'bg-emerald-500',
+    dot: 'bg-emerald-500 ring-emerald-400'
+  },
+  sulawesi: {
+    text: 'text-purple-600',
+    bg: 'bg-purple-50/40',
+    border: 'border-purple-150',
+    badge: 'bg-purple-50 border-purple-200 text-purple-700',
+    accent: 'bg-purple-500',
+    dot: 'bg-purple-500 ring-purple-400'
+  },
+  'bali-nusa': {
+    text: 'text-amber-600',
+    bg: 'bg-amber-50/40',
+    border: 'border-amber-150',
+    badge: 'bg-amber-50 border-amber-200 text-amber-700',
+    accent: 'bg-amber-500',
+    dot: 'bg-amber-500 ring-amber-400'
+  },
+  papua: {
+    text: 'text-blue-600',
+    bg: 'bg-blue-50/40',
+    border: 'border-blue-150',
+    badge: 'bg-blue-50 border-blue-200 text-blue-700',
+    accent: 'bg-blue-500',
+    dot: 'bg-blue-500 ring-blue-400'
+  }
+};
+
 export function LandingPage() {
   const [selectedRegion, setSelectedRegion] = useState(REGIONAL_INFO[1]);
 
@@ -404,27 +455,28 @@ export function LandingPage() {
 
           <div className="space-y-8">
             {/* Wide Map Card */}
-            <div className="bg-slate-50 border border-slate-150 rounded-[2.5rem] p-4 relative overflow-hidden group">
+            <div className="bg-slate-50 border border-slate-150 rounded-[2.5rem] p-4 relative overflow-hidden group shadow-sm">
               <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/5 to-transparent pointer-events-none" />
 
-              <div className="relative w-full aspect-[2.2/1] rounded-3xl overflow-hidden border border-slate-200/80 shadow-md bg-sky-50">
+              <div className="relative w-full aspect-[2.2/1] rounded-3xl overflow-hidden border border-slate-200/80 shadow-inner bg-gradient-to-b from-sky-100 to-sky-50">
                 <img
                   src="/peta pulau indonesia.jpg"
                   alt="Peta Kepulauan Indonesia"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover mix-blend-multiply opacity-90 contrast-105"
                 />
 
-                {/* Hotspots */}
+                {/* Hotspots - Recalculated top positions to map physical islands on 2.2:1 cropped aspect ratio */}
                 {[
-                  { id: 'sumatera', name: 'Sumatera', top: '40%', left: '16%', color: 'bg-cyan-500 ring-cyan-400' },
-                  { id: 'jawa', name: 'Jawa', top: '67%', left: '32%', color: 'bg-red-500 ring-red-400' },
-                  { id: 'kalimantan', name: 'Kalimantan', top: '44%', left: '42%', color: 'bg-emerald-500 ring-emerald-400' },
-                  { id: 'sulawesi', name: 'Sulawesi', top: '46%', left: '60%', color: 'bg-purple-500 ring-purple-400' },
-                  { id: 'bali-nusa', name: 'Bali & Nusa Tenggara', top: '73%', left: '52%', color: 'bg-amber-500 ring-amber-400' },
-                  { id: 'papua', name: 'Maluku & Papua', top: '52%', left: '80%', color: 'bg-blue-500 ring-blue-400' }
+                  { id: 'sumatera', name: 'Sumatera', top: '38%', left: '15%' },
+                  { id: 'jawa', name: 'Jawa', top: '73%', left: '36%' },
+                  { id: 'kalimantan', name: 'Kalimantan', top: '38%', left: '41%' },
+                  { id: 'sulawesi', name: 'Sulawesi', top: '44%', left: '59%' },
+                  { id: 'bali-nusa', name: 'Bali & Nusa Tenggara', top: '80%', left: '55%' },
+                  { id: 'papua', name: 'Maluku & Papua', top: '56%', left: '85%' }
                 ].map((pos) => {
                   const isActive = selectedRegion.id === pos.id;
                   const regionObj = REGIONAL_INFO.find(r => r.id === pos.id);
+                  const theme = REGION_THEMES[pos.id] || REGION_THEMES['jawa'];
                   return (
                     <button
                       key={pos.id}
@@ -434,13 +486,15 @@ export function LandingPage() {
                       className="absolute -translate-x-1/2 -translate-y-1/2 group/pin cursor-pointer z-10 p-1"
                     >
                       {/* Glow animation */}
-                      <span className={`absolute inline-flex h-6 w-6 rounded-full opacity-75 animate-ping -left-[1px] -top-[1px] ${isActive ? 'bg-garda-red' : pos.color}`} />
+                      <span className={`absolute inline-flex h-6 w-6 rounded-full opacity-75 animate-ping -left-[1px] -top-[1px] ${isActive ? 'bg-garda-red' : theme.dot}`} />
                       {/* Core pin */}
-                      <span className={`relative block h-4 w-4 rounded-full border-2 border-white shadow-md transition-all duration-300 ${isActive ? 'bg-garda-red scale-125' : pos.color}`} />
+                      <span className={`relative block h-4 w-4 rounded-full border-2 border-white shadow-md transition-all duration-300 ${isActive ? 'bg-garda-red scale-125' : theme.dot}`} />
 
                       {/* Tooltip Label */}
-                      <span className={`absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-[10px] font-bold text-white rounded-lg opacity-0 group-hover/pin:opacity-100 transition-opacity whitespace-nowrap shadow-md pointer-events-none ${isActive ? 'opacity-100 bg-garda-red' : ''}`}>
+                      <span className={`absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 text-[10px] font-bold text-white rounded-lg opacity-0 group-hover/pin:opacity-100 transition-all duration-250 transform translate-y-1 group-hover/pin:translate-y-0 whitespace-nowrap shadow-md pointer-events-none flex flex-col items-center ${isActive ? 'opacity-100 bg-garda-red translate-y-0' : 'bg-slate-900/90 backdrop-blur-sm'}`}>
                         {pos.name}
+                        {/* Caret pointing down */}
+                        <span className={`absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent ${isActive ? 'border-t-garda-red' : 'border-t-slate-900/90'}`} />
                       </span>
                     </button>
                   );
@@ -458,6 +512,7 @@ export function LandingPage() {
                 <div className="flex flex-wrap lg:flex-col gap-2.5">
                   {REGIONAL_INFO.map((reg) => {
                     const isActive = selectedRegion.id === reg.id;
+                    const regTheme = REGION_THEMES[reg.id] || REGION_THEMES['jawa'];
                     return (
                       <button
                         key={reg.id}
@@ -468,7 +523,10 @@ export function LandingPage() {
                           : 'bg-white text-slate-650 border-slate-200 hover:bg-slate-50'
                           }`}
                       >
-                        <span>{reg.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full transition-transform ${isActive ? 'bg-garda-red scale-110 animate-pulse' : regTheme.accent}`} />
+                          <span>{reg.name}</span>
+                        </div>
                         <span className={`px-2 py-0.5 rounded-full text-[9px] ${isActive ? 'bg-garda-red text-white' : 'bg-slate-100 text-slate-500'}`}>
                           {reg.archivedCount} Isyarat
                         </span>
@@ -485,11 +543,14 @@ export function LandingPage() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
-                  className="bg-slate-50 border border-slate-150 rounded-[2.5rem] p-8 space-y-6 shadow-sm"
+                  className="bg-slate-50 border border-slate-150 rounded-[2.5rem] p-8 space-y-6 shadow-sm relative overflow-hidden"
                 >
+                  {/* Subtle top indicator bar matching the regional color */}
+                  <div className={`absolute top-0 left-0 right-0 h-1.5 w-full ${(REGION_THEMES[selectedRegion.id] || REGION_THEMES['jawa']).accent}`} />
+
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="text-[10px] font-bold tracking-widest text-cyan-600 bg-cyan-50 border border-cyan-200 px-3 py-1 rounded-full uppercase">
+                      <span className={`text-[10px] font-bold tracking-widest px-3 py-1 rounded-full uppercase border ${(REGION_THEMES[selectedRegion.id] || REGION_THEMES['jawa']).badge}`}>
                         Wilayah Terpilih
                       </span>
                       <h3 className="text-3xl font-display font-bold text-slate-900 mt-3">{selectedRegion.name}</h3>
@@ -516,7 +577,7 @@ export function LandingPage() {
                     </div>
                     <div className="bg-white border border-slate-200/65 p-4 rounded-2xl">
                       <span className="text-[10px] font-bold text-slate-400 block uppercase">Kosa Kata Unggulan</span>
-                      <span className="text-sm font-bold text-garda-red block truncate mt-1">{selectedRegion.featuredWord}</span>
+                      <span className={`text-sm font-bold block truncate mt-1 ${(REGION_THEMES[selectedRegion.id] || REGION_THEMES['jawa']).text}`}>{selectedRegion.featuredWord}</span>
                     </div>
                   </div>
 

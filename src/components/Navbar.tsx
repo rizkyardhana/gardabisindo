@@ -7,7 +7,8 @@ import { cn } from '@/src/lib/utils';
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +17,10 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    setIsAuthenticated(!!localStorage.getItem('auth_token'));
+  }, [pathname]);
 
   const navLinks = [
     { name: 'Beranda', path: '/', icon: Home },
@@ -58,7 +63,7 @@ export function Navbar() {
               to={link.path}
               className={cn(
                 'px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2',
-                location.pathname === link.path
+                pathname === link.path
                   ? 'bg-white text-garda-red shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
               )}
@@ -70,9 +75,7 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-
-
-          {!localStorage.getItem('auth_token') ? (
+          {!isAuthenticated ? (
             <Link
               to="/login"
               className="hidden sm:flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white text-garda-red border border-slate-200 hover:bg-red-50 transition-all"
@@ -85,17 +88,17 @@ export function Navbar() {
               onClick={() => {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('auth_role');
+                setIsAuthenticated(false);
                 window.location.href = '/';
               }}
-              className="hidden sm:flex items-center px-4 py-2 text-sm font-medium bg-white text-garda-red border border-slate-200 hover:bg-red-50 transition-all"
+              className="hidden sm:flex items-center px-4 py-2 text-sm font-medium bg-white text-garda-red border border-slate-200 hover:bg-red-50 transition-all cursor-pointer"
             >
               Keluar
             </button>
           )}
 
-
           <button 
-            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X /> : <Menu />}
@@ -120,7 +123,7 @@ export function Navbar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
                     'flex items-center gap-3 p-4 rounded-xl transition-all',
-                    location.pathname === link.path
+                    pathname === link.path
                       ? 'bg-garda-red/5 text-garda-red font-semibold'
                       : 'text-slate-600 hover:bg-slate-50'
                   )}
@@ -131,7 +134,7 @@ export function Navbar() {
               ))}
               <hr className="my-2 border-slate-100" />
 
-              {!localStorage.getItem('auth_token') ? (
+              {!isAuthenticated ? (
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -145,19 +148,23 @@ export function Navbar() {
                   onClick={() => {
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('auth_role');
+                    setIsAuthenticated(false);
                     setIsMobileMenuOpen(false);
                     window.location.href = '/';
                   }}
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-white border border-slate-200 text-garda-red rounded-xl font-bold hover:bg-red-50 transition-all"
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-white border border-slate-200 text-garda-red rounded-xl font-bold hover:bg-red-50 transition-all cursor-pointer"
                 >
                   Keluar
                 </button>
               )}
 
-
-              <button className="flex items-center justify-center gap-2 w-full py-4 bg-garda-red text-white rounded-xl font-bold mt-2">
+              <Link
+                to="/dictionary"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-4 bg-garda-red text-white rounded-xl font-bold mt-2"
+              >
                 Jelajahi Kamus
-              </button>
+              </Link>
             </div>
           </motion.div>
         )}

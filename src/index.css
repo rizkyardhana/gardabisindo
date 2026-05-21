@@ -33,3 +33,95 @@
   @apply bg-slate-950/40 backdrop-blur-lg border border-white/10;
 }
 
+/* High Contrast Mode accessibility overrides */
+:root.high-contrast {
+  --color-slate-50: #000000;
+  --color-slate-100: #1a1a1a;
+  --color-slate-200: #ffffff;
+  --color-slate-300: #ffffff;
+  --color-slate-400: #ffff00;
+  --color-slate-500: #ffff00;
+  --color-slate-600: #ffffff;
+  --color-slate-700: #ffffff;
+  --color-slate-800: #ffffff;
+  --color-slate-900: #ffffff;
+  
+  --color-garda-navy: #000000;
+  --color-garda-red: #ff0055;
+  --color-garda-cyan: #00ffff;
+  
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast .bg-white,
+.high-contrast .bg-slate-50,
+.high-contrast .bg-slate-50\/50,
+.high-contrast .bg-slate-100 {
+  background-color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+.high-contrast p, 
+.high-contrast span, 
+.high-contrast h1, 
+.high-contrast h2, 
+.high-contrast h3, 
+.high-contrast h4, 
+.high-contrast h5, 
+.high-contrast h6, 
+.high-contrast label,
+.high-contrast italic {
+  color: #ffffff !important;
+}
+
+.high-contrast select,
+.high-contrast input,
+.high-contrast textarea {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast select option {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast .border, 
+.high-contrast .border-slate-100, 
+.high-contrast .border-slate-200 {
+  border-color: #ffffff !important;
+  border-width: 2px !important;
+}
+
+.high-contrast .text-slate-400,
+.high-contrast .text-slate-500 {
+  color: #ffff00 !important;
+}
+
+.high-contrast button {
+  border: 2px solid #ffffff !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast button:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Font Size Scales */
+html.text-size-large {
+  font-size: 112.5% !important;
+}
+html.text-size-xlarge {
+  font-size: 125% !important;
+}
+
+
