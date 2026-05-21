@@ -1,23 +1,37 @@
+import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 
-export function RequireAuth({ children }: { children: JSX.Element }) {
+interface RequireAuthProps {
+  children: ReactNode;
+}
+
+export function RequireAuth({ children }: RequireAuthProps) {
   const token = localStorage.getItem('auth_token');
   if (!token) {
     return <Navigate to="/login" replace />;
   }
-  return children;
+  return <>{children}</>;
 }
 
-export function RequireRole({ role, roles, children }: { role?: string; roles?: string[]; children: JSX.Element }) {
+interface RequireRoleProps {
+  role?: string;
+  roles?: string[];
+  children: ReactNode;
+}
+
+export function RequireRole({ role, roles, children }: RequireRoleProps) {
   const token = localStorage.getItem('auth_token');
   const currentRole = localStorage.getItem('auth_role');
   const allowedRoles = roles || (role ? [role] : []);
 
   if (!token) {
     return <Navigate to="/login" replace />;
-  } else if (!currentRole || !allowedRoles.includes(currentRole)) {
+  }
+  
+  if (!currentRole || !allowedRoles.includes(currentRole)) {
     return <Navigate to="/" replace />;
   }
-  return children;
+  
+  return <>{children}</>;
 }
 
