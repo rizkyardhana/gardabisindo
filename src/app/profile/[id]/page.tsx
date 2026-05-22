@@ -2,11 +2,11 @@
 
 import dynamic from 'next/dynamic';
 
-const ProfilePage = dynamic(
-  () => import('@/src/pages/ProfilePage').then((mod) => mod.ProfilePage),
+const App = dynamic(
+  () => import('@/src/App'),
   { ssr: false }
 );
 
 export default function Page() {
-  return <ProfilePage />;
+  return <App />;
 }

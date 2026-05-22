@@ -1,2 +1,5 @@
-// ClientWrapper component disabled
-export function ClientWrapper() { return null; }
+import { ReactNode } from 'react';
+
+export function ClientWrapper({ children }: { children: ReactNode }) {
+  return <>{children}</>;
+}

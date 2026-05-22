@@ -9,7 +9,15 @@ dotenv.config();
 export async function createServer() {
   const app = express();
 
-  app.use(express.json());
+  // In Vercel's serverless runtime, the request body is pre-parsed by the platform helper.
+  // Using express.json() on an already consumed stream will cause the request to hang indefinitely.
+  app.use((req, res, next) => {
+    if (req.body !== undefined && req.body !== null) {
+      next();
+    } else {
+      express.json()(req, res, next);
+    }
+  });
   
   // Serve uploaded videos statically
   const uploadDir = process.env.VERCEL

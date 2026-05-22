@@ -1,2 +1,7 @@
-// Next.js configuration disabled (Next.js reverted)
-export {};
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
