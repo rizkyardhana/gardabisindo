@@ -6,12 +6,12 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { LandingPage } from './pages/LandingPage';
-import { DictionaryPage } from './pages/DictionaryPage';
-import { DetailSignPage } from './pages/DetailSignPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { LoginPage } from './pages/LoginPage';
+import { LandingPage } from './views/LandingPage';
+import { DictionaryPage } from './views/DictionaryPage';
+import { DetailSignPage } from './views/DetailSignPage';
+import { DashboardPage } from './views/DashboardPage';
+import { ProfilePage } from './views/ProfilePage';
+import { LoginPage } from './views/LoginPage';
 import { RequireAuth, RequireRole } from './routes/RequireAuth';
 
 export default function App() {
