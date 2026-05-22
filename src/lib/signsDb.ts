@@ -8,8 +8,15 @@ const SIGNS_FILE = isVercel
   : path.join(process.cwd(), 'signs.json');
 
 // Vercel KV REST API configuration
-const KV_REST_API_URL = process.env.KV_REST_API_URL;
-const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
+const KV_REST_API_URL = process.env.KV_REST_API_URL || 
+                        process.env.UPSTASH_REDIS_REST_URL || 
+                        process.env.PENYIMPANAN_REST_API_URL || 
+                        process.env.PENYIMPANAN_URL;
+
+const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN || 
+                          process.env.UPSTASH_REDIS_REST_TOKEN || 
+                          process.env.PENYIMPANAN_REST_API_TOKEN || 
+                          process.env.PENYIMPANAN_TOKEN;
 
 const defaultSigns = [
   { 
