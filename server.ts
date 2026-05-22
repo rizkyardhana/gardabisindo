@@ -5,6 +5,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { loadSigns, saveSigns } from "./src/lib/signsDb";
 import { loadUsers, saveUsers } from "./src/lib/usersDb";
+import { sendRecoveryEmail } from "./src/lib/email";
 
 dotenv.config();
 
@@ -127,6 +128,9 @@ export async function createServer() {
       if (!user) {
         return res.status(404).json({ error: "Email tidak terdaftar dalam sistem kami." });
       }
+
+      // Mengirim email pemulihan (akan dilewati jika RESEND_API_KEY tidak disetel)
+      await sendRecoveryEmail(user.email, user.name, user.password);
 
       res.json({
         success: true,
