@@ -444,6 +444,10 @@ export function DashboardPage() {
     
     // Check if we need to upload a video
     if (uploadMode === 'file' && selectedFile) {
+      if (selectedFile.size > 4.5 * 1024 * 1024) {
+        triggerToast('Ukuran file video terlalu besar. Maksimal 4.5MB untuk serverless deployment.');
+        return;
+      }
       setIsUploading(true);
       try {
         const formData = new FormData();
@@ -646,11 +650,11 @@ export function DashboardPage() {
                <div className="relative z-10">
                   <h4 className="font-bold text-sm mb-2">Penyimpanan Arsip</h4>
                   <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                     <span>Terpakai: 84%</span>
-                     <span>1.2 TB / 1.5 TB</span>
+                     <span>Terpakai: 24%</span>
+                     <span>1.2 TB / 5.0 TB</span>
                   </div>
                   <div className="h-1.5 bg-slate-800 rounded-full mb-6">
-                     <div className="h-full w-[84%] bg-garda-red rounded-full" />
+                     <div className="h-full w-[24%] bg-garda-red rounded-full" />
                   </div>
                   <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition-all">
                      Tambah Kapasitas
@@ -1380,7 +1384,7 @@ export function DashboardPage() {
                       />
                       <Video className="w-8 h-8 text-slate-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
                       <span className="block text-xs font-bold text-slate-700">{fileName || "Pilih file video gerakan isyarat"}</span>
-                      <span className="block text-[10px] text-slate-400 mt-1">MP4, WebM, atau MOV (Maks. 50MB)</span>
+                      <span className="block text-[10px] text-slate-400 mt-1">MP4, WebM, atau MOV (Maks. 4.5MB)</span>
                     </div>
                   ) : (
                     <div className="bg-slate-950 rounded-2xl overflow-hidden aspect-video relative flex items-center justify-center border border-slate-800 group shadow-inner">
