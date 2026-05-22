@@ -9,7 +9,7 @@ export async function POST(
     const { id } = await params;
     const comment = await request.json();
 
-    const signs = loadSigns();
+    const signs = await loadSigns();
     const signIndex = signs.findIndex((s: any) => String(s.id) === String(id));
 
     if (signIndex === -1) {
@@ -25,7 +25,7 @@ export async function POST(
     }
 
     signs[signIndex].comments.push(comment);
-    saveSigns(signs);
+    await saveSigns(signs);
 
     return NextResponse.json({ success: true, comments: signs[signIndex].comments });
   } catch (e: any) {

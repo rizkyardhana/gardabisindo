@@ -7,6 +7,10 @@ const SIGNS_FILE = isVercel
   ? path.join('/tmp', 'signs.json')
   : path.join(process.cwd(), 'signs.json');
 
+// Vercel KV REST API configuration
+const KV_REST_API_URL = process.env.KV_REST_API_URL;
+const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
+
 const defaultSigns = [
   { 
     id: 1, 
@@ -136,10 +140,51 @@ const defaultSigns = [
   }
 ];
 
-// In-memory fallback if file system is completely locked/unavailable
 let memoryDb: any[] | null = null;
 
-export function loadSigns() {
+export async function loadSigns(): Promise<any[]> {
+  // 1. Try Vercel KV if available
+  if (KV_REST_API_URL && KV_REST_API_TOKEN) {
+    try {
+      const response = await fetch(`${KV_REST_API_URL}/get/signs`, {
+        headers: {
+          'Authorization': `Bearer ${KV_REST_API_TOKEN}`
+        },
+        cache: 'no-store'
+      });
+      const data = await response.json();
+      if (data && data.result) {
+        return JSON.parse(data.result);
+      } else {
+        // Pre-populate Vercel KV with hydrated default signs
+        const hydratedSigns = defaultSigns.map(s => ({
+          ...s,
+          comments: [
+            {
+              id: `c1_${s.id}`,
+              userName: 'Ahmad Hadi',
+              avatarUrl: '',
+              text: `Isyarat "${s.word}" di wilayah kami agak sedikit berbeda di bagian ketukan tangannya. Senang melihat variasi daerah ini terdokumentasi!`,
+              createdAt: '1 hari yang lalu'
+            },
+            {
+              id: `c2_${s.id}`,
+              userName: 'Tim Ahli PUSBISINDO',
+              avatarUrl: '/profil.jpg',
+              text: 'Akurasi gerakan ini sudah sesuai dengan standar regional dan linguistik BISINDO. Bagus sekali kontribusinya!',
+              createdAt: 'Baru saja'
+            }
+          ]
+        }));
+        await saveSigns(hydratedSigns);
+        return hydratedSigns;
+      }
+    } catch (e) {
+      console.error("Error loading signs from Vercel KV:", e);
+    }
+  }
+
+  // 2. Fallback to Local Filesystem
   if (memoryDb) return memoryDb;
   
   try {
@@ -148,7 +193,6 @@ export function loadSigns() {
       memoryDb = JSON.parse(data);
       return memoryDb!;
     } else {
-      // Hydrate default signs with their default comments
       const hydratedSigns = defaultSigns.map(s => ({
         ...s,
         comments: [
@@ -168,15 +212,12 @@ export function loadSigns() {
           }
         ]
       }));
-
-      // Try writing hydrated signs to initialize file
       fs.writeFileSync(SIGNS_FILE, JSON.stringify(hydratedSigns, null, 2));
       memoryDb = hydratedSigns;
       return memoryDb;
     }
   } catch (e) {
     console.error("Error loading signs from file, falling back to memory:", e);
-    // Try process.cwd() if /tmp didn't work for some reason
     try {
       const localFile = path.join(process.cwd(), 'signs.json');
       if (fs.existsSync(localFile)) {
@@ -186,7 +227,6 @@ export function loadSigns() {
       }
     } catch (localError) {}
     
-    // In memory fallback without file write
     const hydratedSigns = defaultSigns.map(s => ({
       ...s,
       comments: [
@@ -211,13 +251,30 @@ export function loadSigns() {
   }
 }
 
-export function saveSigns(signsList: any[]) {
+export async function saveSigns(signsList: any[]): Promise<void> {
   memoryDb = signsList;
+
+  // 1. Save to Vercel KV if available
+  if (KV_REST_API_URL && KV_REST_API_TOKEN) {
+    try {
+      await fetch(`${KV_REST_API_URL}/set/signs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${KV_REST_API_TOKEN}`
+        },
+        body: JSON.stringify(signsList)
+      });
+      return;
+    } catch (e) {
+      console.error("Error saving signs to Vercel KV:", e);
+    }
+  }
+
+  // 2. Save to Local Filesystem
   try {
     fs.writeFileSync(SIGNS_FILE, JSON.stringify(signsList, null, 2));
   } catch (e) {
     console.error("Error saving signs to file:", e);
-    // Try writing to process.cwd() as fallback
     try {
       const localFile = path.join(process.cwd(), 'signs.json');
       fs.writeFileSync(localFile, JSON.stringify(signsList, null, 2));

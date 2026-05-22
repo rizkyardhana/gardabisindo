@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email, password, dan role wajib diisi." }, { status: 400 });
     }
 
-    const usersDb = loadUsers();
+    const usersDb = await loadUsers();
     const user = usersDb.find(u => 
       u.email.toLowerCase() === email.toLowerCase() && 
       u.password === password && 

@@ -3,7 +3,7 @@ import { loadSigns, saveSigns } from '@/src/lib/signsDb';
 
 export async function GET() {
   try {
-    const signs = loadSigns();
+    const signs = await loadSigns();
     return NextResponse.json(signs);
   } catch (e: any) {
     console.error("Gagal memuat kosa isyarat:", e);
@@ -27,9 +27,9 @@ export async function POST(request: Request) {
       newSign.comments = [];
     }
 
-    const signs = loadSigns();
+    const signs = await loadSigns();
     signs.unshift(newSign);
-    saveSigns(signs);
+    await saveSigns(signs);
 
     return NextResponse.json({ success: true, sign: newSign });
   } catch (e: any) {

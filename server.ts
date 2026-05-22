@@ -4,6 +4,7 @@ import fs from "fs";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { loadSigns, saveSigns } from "./src/lib/signsDb";
+import { loadUsers, saveUsers } from "./src/lib/usersDb";
 
 dotenv.config();
 
@@ -72,60 +73,8 @@ export async function createServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Persistent user database using a JSON file to prevent loss on server restarts
-  const USERS_FILE = process.env.VERCEL 
-    ? path.join("/tmp", "users.json")
-    : path.join(process.cwd(), "users.json");
-
-  function loadUsers() {
-    const defaultUsers = [
-      {
-        email: "admin@garda.com",
-        password: "password123",
-        role: "admin",
-        name: "Admin GARDA",
-        region: "Nasional",
-        bio: "Administrator platform Garda BISINDO."
-      },
-      {
-        email: "informan@garda.com",
-        password: "password123",
-        role: "informant",
-        name: "Rizki Ardhana",
-        region: "Jakarta Selatan",
-        bio: "Saya seorang aktivis Tuli yang berdedikasi untuk mendokumentasikan kosa isyarat daerah Jakarta agar tidak terlupakan oleh sejarah perkembangan teknologi."
-      }
-    ];
-
-    try {
-      if (fs.existsSync(USERS_FILE)) {
-        const data = fs.readFileSync(USERS_FILE, "utf-8");
-        return JSON.parse(data);
-      } else {
-        fs.writeFileSync(USERS_FILE, JSON.stringify(defaultUsers, null, 2));
-        return defaultUsers;
-      }
-    } catch (e) {
-      console.error("Error loading users from file, falling back to memory:", e);
-      return defaultUsers;
-    }
-  }
-
-  function saveUsers(usersList: any[]) {
-    try {
-      fs.writeFileSync(USERS_FILE, JSON.stringify(usersList, null, 2));
-    } catch (e) {
-      console.error("Error saving users to file:", e);
-    }
-  }
-
-  const usersDb = loadUsers();
-
-  // Load signs from shared database helper
-  let signsDb = loadSigns();
-
-
-  app.post("/api/register", (req, res) => {
+  // API Routes for User Management (Express fallback)
+  app.post("/api/register", async (req, res) => {
     const { name, email, region, password, role } = req.body;
 
     if (!name || !email || !region || !password || !role) {
@@ -136,87 +85,111 @@ export async function createServer() {
       return res.status(400).json({ error: "Password minimal harus 6 karakter." });
     }
 
-    const exists = usersDb.some(u => u.email.toLowerCase() === email.toLowerCase());
-    if (exists) {
-      return res.status(400).json({ error: "Email tersebut sudah terdaftar." });
+    try {
+      const usersDb = await loadUsers();
+      const exists = usersDb.some(u => u.email.toLowerCase() === email.toLowerCase());
+      if (exists) {
+        return res.status(400).json({ error: "Email tersebut sudah terdaftar." });
+      }
+
+      const newUser = {
+        name,
+        email,
+        region,
+        password,
+        role,
+        bio: `Saya seorang ${role === 'informant' ? 'Informan Kontributor' : 'Admin'} di platform Garda BISINDO.`
+      };
+
+      usersDb.push(newUser);
+      await saveUsers(usersDb);
+
+      res.json({
+        success: true,
+        message: "Registrasi berhasil! Silakan masuk dengan akun Anda."
+      });
+    } catch (e: any) {
+      console.error("Gagal melakukan registrasi:", e);
+      res.status(500).json({ error: "Terjadi kesalahan saat memproses registrasi." });
     }
-
-    const newUser = {
-      name,
-      email,
-      region,
-      password,
-      role,
-      bio: `Saya seorang ${role === 'informant' ? 'Informan Kontributor' : 'Admin'} di platform Garda BISINDO.`
-    };
-
-    usersDb.push(newUser);
-    saveUsers(usersDb);
-
-    res.json({
-      success: true,
-      message: "Registrasi berhasil! Silakan masuk dengan akun Anda."
-    });
   });
 
-  app.post("/api/forgot-password", (req, res) => {
+  app.post("/api/forgot-password", async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: "Email wajib diisi." });
     }
 
-    const user = usersDb.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (!user) {
-      return res.status(404).json({ error: "Email tidak terdaftar dalam sistem kami." });
-    }
+    try {
+      const usersDb = await loadUsers();
+      const user = usersDb.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (!user) {
+        return res.status(404).json({ error: "Email tidak terdaftar dalam sistem kami." });
+      }
 
-    res.json({
-      success: true,
-      message: `Tautan pemulihan password telah dikirim ke ${email}.`,
-      demoPassword: user.password
-    });
+      res.json({
+        success: true,
+        message: `Tautan pemulihan password telah dikirim ke ${email}.`,
+        demoPassword: user.password
+      });
+    } catch (e: any) {
+      console.error("Gagal forgot-password:", e);
+      res.status(500).json({ error: "Terjadi kesalahan saat memproses pemulihan sandi." });
+    }
   });
 
-  app.post("/api/login", (req, res) => {
+  app.post("/api/login", async (req, res) => {
     const { email, password, role } = req.body;
 
     if (!email || !password || !role) {
       return res.status(400).json({ error: "Email, password, dan role wajib diisi." });
     }
 
-    const user = usersDb.find(u => 
-      u.email.toLowerCase() === email.toLowerCase() && 
-      u.password === password && 
-      u.role === role
-    );
+    try {
+      const usersDb = await loadUsers();
+      const user = usersDb.find(u => 
+        u.email.toLowerCase() === email.toLowerCase() && 
+        u.password === password && 
+        u.role === role
+      );
 
-    if (!user) {
-      return res.status(401).json({ error: "Email, password, atau peran (role) salah." });
-    }
-
-    const emailBase64 = Buffer.from(email).toString('base64');
-    const token = `garda_token_${role}_${emailBase64}`;
-
-    res.json({
-      success: true,
-      token,
-      role,
-      user: {
-        email: user.email,
-        name: user.name,
-        region: user.region,
-        bio: user.bio
+      if (!user) {
+        return res.status(401).json({ error: "Email, password, atau peran (role) salah." });
       }
-    });
+
+      const emailBase64 = Buffer.from(email).toString('base64');
+      const token = `garda_token_${role}_${emailBase64}`;
+
+      res.json({
+        success: true,
+        token,
+        role,
+        user: {
+          email: user.email,
+          name: user.name,
+          region: user.region,
+          bio: user.bio
+        }
+      });
+    } catch (e: any) {
+      console.error("Gagal melakukan login:", e);
+      res.status(500).json({ error: "Terjadi kesalahan saat memproses login." });
+    }
   });
   
   // Signs and comments endpoints
-  app.get("/api/signs", (req, res) => {
-    res.json(signsDb);
+  app.get("/api/signs", async (req, res) => {
+    try {
+      const signsDb = await loadSigns();
+      res.json(signsDb);
+    } catch (e: any) {
+      console.error("Gagal memuat kosa isyarat:", e);
+      res.status(500).json({ error: "Gagal memuat kosa isyarat dari database." });
+    }
   });
 
-  app.post("/api/signs", (req, res) => {
+  app.post("/api/signs", async (req, res) => {
     const newSign = req.body;
     if (!newSign || !newSign.word) {
       return res.status(400).json({ error: "Data isyarat tidak lengkap." });
@@ -224,91 +197,125 @@ export async function createServer() {
     if (!newSign.id) {
       newSign.id = Date.now();
     }
-    // Check if comments exist, if not, empty array
     if (!newSign.comments) {
       newSign.comments = [];
     }
-    signsDb.unshift(newSign);
-    saveSigns(signsDb);
-    res.json({ success: true, sign: newSign });
+    try {
+      const signsDb = await loadSigns();
+      signsDb.unshift(newSign);
+      await saveSigns(signsDb);
+      res.json({ success: true, sign: newSign });
+    } catch (e: any) {
+      console.error("Gagal menambahkan kosa isyarat:", e);
+      res.status(500).json({ error: "Gagal menyimpan kosa isyarat baru." });
+    }
   });
 
-  app.put("/api/signs/:id", (req, res) => {
+  app.put("/api/signs/:id", async (req, res) => {
     const id = req.params.id;
     const updatedFields = req.body;
-    const index = signsDb.findIndex(s => String(s.id) === String(id));
-    if (index === -1) {
-      return res.status(404).json({ error: "Isyarat tidak ditemukan." });
+    try {
+      const signsDb = await loadSigns();
+      const index = signsDb.findIndex(s => String(s.id) === String(id));
+      if (index === -1) {
+        return res.status(404).json({ error: "Isyarat tidak ditemukan." });
+      }
+      
+      signsDb[index] = { ...signsDb[index], ...updatedFields };
+      await saveSigns(signsDb);
+      res.json({ success: true, sign: signsDb[index] });
+    } catch (e: any) {
+      console.error("Gagal memperbarui kosa isyarat:", e);
+      res.status(500).json({ error: "Gagal memperbarui kosa isyarat." });
     }
-    
-    // Support parsing strings if id types are mismatched
-    signsDb[index] = { ...signsDb[index], ...updatedFields };
-    saveSigns(signsDb);
-    res.json({ success: true, sign: signsDb[index] });
   });
 
-  app.delete("/api/signs/:id", (req, res) => {
+  app.delete("/api/signs/:id", async (req, res) => {
     const id = req.params.id;
-    const index = signsDb.findIndex(s => String(s.id) === String(id));
-    if (index === -1) {
-      return res.status(404).json({ error: "Isyarat tidak ditemukan." });
+    try {
+      const signsDb = await loadSigns();
+      const index = signsDb.findIndex(s => String(s.id) === String(id));
+      if (index === -1) {
+        return res.status(404).json({ error: "Isyarat tidak ditemukan." });
+      }
+      const deleted = signsDb.splice(index, 1);
+      await saveSigns(signsDb);
+      res.json({ success: true, deletedSign: deleted[0] });
+    } catch (e: any) {
+      console.error("Gagal menghapus kosa isyarat:", e);
+      res.status(500).json({ error: "Gagal menghapus kosa isyarat." });
     }
-    const deleted = signsDb.splice(index, 1);
-    saveSigns(signsDb);
-    res.json({ success: true, deletedSign: deleted[0] });
   });
 
-  app.post("/api/signs/:id/comments", (req, res) => {
+  app.post("/api/signs/:id/comments", async (req, res) => {
     const id = req.params.id;
     const comment = req.body;
-    const signIndex = signsDb.findIndex(s => String(s.id) === String(id));
-    if (signIndex === -1) {
-      return res.status(404).json({ error: "Isyarat tidak ditemukan." });
+    try {
+      const signsDb = await loadSigns();
+      const signIndex = signsDb.findIndex(s => String(s.id) === String(id));
+      if (signIndex === -1) {
+        return res.status(404).json({ error: "Isyarat tidak ditemukan." });
+      }
+      if (!signsDb[signIndex].comments) {
+        signsDb[signIndex].comments = [];
+      }
+      if (!comment.id) {
+        comment.id = `c_${Date.now()}`;
+      }
+      signsDb[signIndex].comments.push(comment);
+      await saveSigns(signsDb);
+      res.json({ success: true, comments: signsDb[signIndex].comments });
+    } catch (e: any) {
+      console.error("Gagal menambahkan komentar:", e);
+      res.status(500).json({ error: "Gagal menyimpan komentar baru." });
     }
-    if (!signsDb[signIndex].comments) {
-      signsDb[signIndex].comments = [];
-    }
-    if (!comment.id) {
-      comment.id = `c_${Date.now()}`;
-    }
-    signsDb[signIndex].comments.push(comment);
-    saveSigns(signsDb);
-    res.json({ success: true, comments: signsDb[signIndex].comments });
   });
 
-  app.put("/api/signs/:id/comments/:commentId", (req, res) => {
+  app.put("/api/signs/:id/comments/:commentId", async (req, res) => {
     const { id, commentId } = req.params;
     const updatedComment = req.body;
-    const signIndex = signsDb.findIndex(s => String(s.id) === String(id));
-    if (signIndex === -1) {
-      return res.status(404).json({ error: "Isyarat tidak ditemukan." });
-    }
-    if (signsDb[signIndex].comments) {
-      const cIndex = signsDb[signIndex].comments.findIndex((c: any) => String(c.id) === String(commentId));
-      if (cIndex !== -1) {
-        signsDb[signIndex].comments[cIndex] = { ...signsDb[signIndex].comments[cIndex], ...updatedComment };
-        saveSigns(signsDb);
-        return res.json({ success: true, comments: signsDb[signIndex].comments });
+    try {
+      const signsDb = await loadSigns();
+      const signIndex = signsDb.findIndex(s => String(s.id) === String(id));
+      if (signIndex === -1) {
+        return res.status(404).json({ error: "Isyarat tidak ditemukan." });
       }
+      if (signsDb[signIndex].comments) {
+        const cIndex = signsDb[signIndex].comments.findIndex((c: any) => String(c.id) === String(commentId));
+        if (cIndex !== -1) {
+          signsDb[signIndex].comments[cIndex] = { ...signsDb[signIndex].comments[cIndex], ...updatedComment };
+          await saveSigns(signsDb);
+          return res.json({ success: true, comments: signsDb[signIndex].comments });
+        }
+      }
+      res.status(404).json({ error: "Komentar tidak ditemukan." });
+    } catch (e: any) {
+      console.error("Gagal menyunting komentar:", e);
+      res.status(500).json({ error: "Gagal memperbarui komentar." });
     }
-    res.status(404).json({ error: "Komentar tidak ditemukan." });
   });
 
-  app.delete("/api/signs/:id/comments/:commentId", (req, res) => {
+  app.delete("/api/signs/:id/comments/:commentId", async (req, res) => {
     const { id, commentId } = req.params;
-    const signIndex = signsDb.findIndex(s => String(s.id) === String(id));
-    if (signIndex === -1) {
-      return res.status(404).json({ error: "Isyarat tidak ditemukan." });
-    }
-    if (signsDb[signIndex].comments) {
-      const initialLength = signsDb[signIndex].comments.length;
-      signsDb[signIndex].comments = signsDb[signIndex].comments.filter((c: any) => String(c.id) !== String(commentId));
-      if (signsDb[signIndex].comments.length < initialLength) {
-        saveSigns(signsDb);
-        return res.json({ success: true, comments: signsDb[signIndex].comments });
+    try {
+      const signsDb = await loadSigns();
+      const signIndex = signsDb.findIndex(s => String(s.id) === String(id));
+      if (signIndex === -1) {
+        return res.status(404).json({ error: "Isyarat tidak ditemukan." });
       }
+      if (signsDb[signIndex].comments) {
+        const initialLength = signsDb[signIndex].comments.length;
+        signsDb[signIndex].comments = signsDb[signIndex].comments.filter((c: any) => String(c.id) !== String(commentId));
+        if (signsDb[signIndex].comments.length < initialLength) {
+          await saveSigns(signsDb);
+          return res.json({ success: true, comments: signsDb[signIndex].comments });
+        }
+      }
+      res.status(404).json({ error: "Komentar tidak ditemukan." });
+    } catch (e: any) {
+      console.error("Gagal menghapus komentar:", e);
+      res.status(500).json({ error: "Gagal menghapus komentar." });
     }
-    res.status(404).json({ error: "Komentar tidak ditemukan." });
   });
 
 

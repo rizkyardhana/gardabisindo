@@ -53,6 +53,10 @@ export function DashboardPage() {
     try {
       setRecordedVideoUrl(null);
       setRecordedChunks([]);
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        triggerToast("Kamera tidak didukung atau memerlukan koneksi aman (HTTPS/localhost) jika diakses dari perangkat lain.");
+        return;
+      }
       const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
       setStream(mediaStream);
     } catch (err) {

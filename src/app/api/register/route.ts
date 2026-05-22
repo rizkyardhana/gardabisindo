@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password minimal harus 6 karakter." }, { status: 400 });
     }
 
-    const usersDb = loadUsers();
+    const usersDb = await loadUsers();
     const exists = usersDb.some(u => u.email.toLowerCase() === email.toLowerCase());
     if (exists) {
       return NextResponse.json({ error: "Email tersebut sudah terdaftar." }, { status: 400 });
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     };
 
     usersDb.push(newUser);
-    saveUsers(usersDb);
+    await saveUsers(usersDb);
 
     return NextResponse.json({
       success: true,

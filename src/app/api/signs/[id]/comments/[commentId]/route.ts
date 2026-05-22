@@ -9,7 +9,7 @@ export async function PUT(
     const { id, commentId } = await params;
     const updatedComment = await request.json();
 
-    const signs = loadSigns();
+    const signs = await loadSigns();
     const signIndex = signs.findIndex((s: any) => String(s.id) === String(id));
 
     if (signIndex === -1) {
@@ -20,7 +20,7 @@ export async function PUT(
       const cIndex = signs[signIndex].comments.findIndex((c: any) => String(c.id) === String(commentId));
       if (cIndex !== -1) {
         signs[signIndex].comments[cIndex] = { ...signs[signIndex].comments[cIndex], ...updatedComment };
-        saveSigns(signs);
+        await saveSigns(signs);
         return NextResponse.json({ success: true, comments: signs[signIndex].comments });
       }
     }
@@ -39,7 +39,7 @@ export async function DELETE(
   try {
     const { id, commentId } = await params;
 
-    const signs = loadSigns();
+    const signs = await loadSigns();
     const signIndex = signs.findIndex((s: any) => String(s.id) === String(id));
 
     if (signIndex === -1) {
@@ -51,7 +51,7 @@ export async function DELETE(
       signs[signIndex].comments = signs[signIndex].comments.filter((c: any) => String(c.id) !== String(commentId));
       
       if (signs[signIndex].comments.length < initialLength) {
-        saveSigns(signs);
+        await saveSigns(signs);
         return NextResponse.json({ success: true, comments: signs[signIndex].comments });
       }
     }

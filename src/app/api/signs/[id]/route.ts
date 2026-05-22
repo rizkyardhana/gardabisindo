@@ -9,7 +9,7 @@ export async function PUT(
     const { id } = await params;
     const updatedFields = await request.json();
     
-    const signs = loadSigns();
+    const signs = await loadSigns();
     const index = signs.findIndex((s: any) => String(s.id) === String(id));
     
     if (index === -1) {
@@ -17,7 +17,7 @@ export async function PUT(
     }
 
     signs[index] = { ...signs[index], ...updatedFields };
-    saveSigns(signs);
+    await saveSigns(signs);
 
     return NextResponse.json({ success: true, sign: signs[index] });
   } catch (e: any) {
@@ -33,7 +33,7 @@ export async function DELETE(
   try {
     const { id } = await params;
     
-    const signs = loadSigns();
+    const signs = await loadSigns();
     const index = signs.findIndex((s: any) => String(s.id) === String(id));
     
     if (index === -1) {
@@ -41,7 +41,7 @@ export async function DELETE(
     }
 
     const deleted = signs.splice(index, 1);
-    saveSigns(signs);
+    await saveSigns(signs);
 
     return NextResponse.json({ success: true, deletedSign: deleted[0] });
   } catch (e: any) {
