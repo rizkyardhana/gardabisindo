@@ -458,14 +458,16 @@ export function DashboardPage() {
           body: formData
         });
         
-        if (!response.ok) throw new Error("Gagal mengunggah video ke server");
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.error || "Gagal mengunggah video ke server");
+        }
         if (data.success && data.videoUrl) {
           finalVideoUrl = data.videoUrl;
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        triggerToast('Gagal mengunggah video. Silakan coba lagi.');
+        triggerToast(`Gagal: ${err.message || 'Silakan coba lagi.'}`);
         setIsUploading(false);
         return;
       }
@@ -485,14 +487,16 @@ export function DashboardPage() {
           body: formData
         });
         
-        if (!response.ok) throw new Error("Gagal mengunggah video rekaman");
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.error || "Gagal mengunggah video rekaman");
+        }
         if (data.success && data.videoUrl) {
           finalVideoUrl = data.videoUrl;
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        triggerToast('Gagal mengunggah rekaman video. Silakan coba lagi.');
+        triggerToast(`Gagal: ${err.message || 'Silakan coba lagi.'}`);
         setIsUploading(false);
         return;
       }
