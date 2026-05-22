@@ -15,20 +15,4 @@
     "region": "Jakarta Selatan",
     "bio": "Saya seorang aktivis Tuli yang berdedikasi untuk mendokumentasikan kosa isyarat daerah Jakarta agar tidak terlupakan oleh sejarah perkembangan teknologi."
   },
-  {
-    "name": "Marsha",
-    "email": "marsha@gmail.com",
-    "region": "Jakarta",
-    "password": "Vania2001",
-    "role": "admin",
-    "bio": "Saya seorang Admin di platform Garda BISINDO."
-  },
-  {
-    "name": "Marsha Ayu Vania",
-    "email": "marsha1@gmail.com",
-    "region": "Jakarta",
-    "password": "Vania2002",
-    "role": "informant",
-    "bio": "Saya seorang Informan Kontributor di platform Garda BISINDO."
-  }
 ]
