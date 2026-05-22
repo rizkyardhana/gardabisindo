@@ -4,12 +4,10 @@ import path from 'path';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ filename: string }> | { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
-    // In Next.js 15, dynamic route params should be awaited if they are a promise
-    const resolvedParams = 'then' in params ? await params : params;
-    const { filename } = resolvedParams;
+    const { filename } = await params;
 
     if (!filename) {
       return new Response('Bad request: Missing filename', { status: 400 });
