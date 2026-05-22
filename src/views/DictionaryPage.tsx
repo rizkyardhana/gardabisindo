@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Grid, List as ListIcon, Bookmark, Heart, ChevronDown, SlidersHorizontal, RotateCcw, Sparkles, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SignCard } from '@/src/components/SignCard';
@@ -34,105 +34,21 @@ export function DictionaryPage() {
   const [showVisualFilter, setShowVisualFilter] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
-  // Load signs from localStorage, fallback to default signs if empty
-  const [localSigns] = useState<any[]>(() => {
-    const saved = localStorage.getItem('garda_signs');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    const initialSigns = [
-      { 
-        id: 1, 
-        word: 'Terima Kasih', 
-        category: 'Harian', 
-        region: 'Jakarta', 
-        status: 'Approved', 
-        informant: 'Rizki Ardhana', 
-        date: '2024-01-10',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Gerakan telapak tangan kanan menempel di dagu lalu diayunkan ke depan sebagai simbol penghormatan dan terima kasih.',
-        likes: 124,
-        bookmarks: 45
-      },
-      { 
-        id: 2, 
-        word: 'Rumah', 
-        category: 'Harian', 
-        region: 'Yogyakarta', 
-        status: 'Approved', 
-        informant: 'Ahmad Hadi', 
-        date: '2024-01-12',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Ujung-ujung jari kedua tangan dipertemukan di atas kepala membentuk sudut segitiga menyerupai atap rumah.',
-        likes: 89,
-        bookmarks: 23
-      },
-      { 
-        id: 3, 
-        word: 'Makan', 
-        category: 'Harian', 
-        region: 'Bali', 
-        status: 'Approved', 
-        informant: 'Ni Wayan', 
-        date: '2024-01-15',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Jari-jari tangan dominan dikuncupkan lalu diarahkan ke depan mulut berulang-ulang seperti menyuap makanan.',
-        likes: 210,
-        bookmarks: 78
-      },
-      { 
-        id: 4, 
-        word: 'Belajar', 
-        category: 'Pendidikan', 
-        region: 'Nasional', 
-        status: 'Approved', 
-        informant: 'Budi Santoso', 
-        date: '2024-01-20',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Kedua telapak tangan menghadap ke atas dan digerakkan seperti membaca buku.',
-        likes: 340,
-        bookmarks: 120
-      },
-      { 
-        id: 5, 
-        word: 'Telepon', 
-        category: 'Teknologi', 
-        region: 'Nasional', 
-        status: 'Approved', 
-        informant: 'Siti Aminah', 
-        date: '2024-01-22',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Ibu jari dan kelingking menempel di telinga dan mulut melambangkan gagang telepon.',
-        likes: 156,
-        bookmarks: 32
-      },
-      { 
-        id: 6, 
-        word: 'Dokter', 
-        category: 'Medis', 
-        region: 'Sumatera Barat', 
-        status: 'Approved', 
-        informant: 'Dewi Lestari', 
-        date: '2024-01-25',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Tangan menempel di pergelangan tangan seolah mengecek denyut nadi.',
-        likes: 198,
-        bookmarks: 56
-      }
-    ];
-    localStorage.setItem('garda_signs', JSON.stringify(initialSigns));
-    return initialSigns;
-  });
+  const [localSigns, setLocalSigns] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/signs')
+      .then(res => res.json())
+      .then(data => {
+        setLocalSigns(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Gagal memuat kosa isyarat dari server:", err);
+        setIsLoading(false);
+      });
+  }, []);
 
   // Helper to map default handshape and location based on the sign's word (for localSigns)
   const getInitialParameters = (word: string) => {
@@ -155,7 +71,7 @@ export function DictionaryPage() {
 
   // Map to Sign interface and filter only Approved ones
   const mappedSigns: Sign[] = localSigns
-    .filter((s: any) => !s.status || s.status === 'Approved')
+    .filter((s: any) => s.status !== 'Rejected')
     .map((s: any) => {
       const defaults = getInitialParameters(s.word);
       return {
@@ -412,7 +328,12 @@ export function DictionaryPage() {
       {/* Main Content */}
       <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          {filteredSigns.length > 0 ? (
+          {isLoading ? (
+            <div className="py-20 text-center flex flex-col items-center justify-center">
+              <div className="w-12 h-12 border-4 border-garda-red border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-slate-500 font-semibold animate-pulse">Memuat kamus isyarat...</p>
+            </div>
+          ) : filteredSigns.length > 0 ? (
             <AnimatePresence mode="popLayout">
               <motion.div 
                 layout

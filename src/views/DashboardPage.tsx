@@ -177,145 +177,29 @@ export function DashboardPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // 1. Dynamic Recent Uploads (Aktivitas Terkini) State
-  const [recentUploads, setRecentUploads] = useState([
-    { 
-      id: 1, 
-      word: 'Internet', 
-      category: 'Teknologi', 
-      region: 'Nasional', 
-      status: 'Approved' as const, 
-      date: '2 jam yang lalu',
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      description: 'Isyarat internet dilakukan dengan mempertemukan ujung jari-jari kedua tangan membentuk jaringan terbuka.'
-    },
-    { 
-      id: 2, 
-      word: 'Sinyal', 
-      category: 'Teknologi', 
-      region: 'Papua', 
-      status: 'Pending' as const, 
-      date: '5 jam yang lalu',
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      description: 'Isyarat sinyal digerakkan dengan mengangkat tangan dominan ke atas dan menggerakkan jari manis serta kelingking berulang seperti gelombang.'
-    },
-    { 
-      id: 3, 
-      word: 'Laptop', 
-      category: 'Teknologi', 
-      region: 'Nasional', 
-      status: 'Approved' as const, 
-      date: '1 hari yang lalu',
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      description: 'Isyarat laptop digambarkan dengan menangkupkan kedua telapak tangan sejajar dada lalu membukanya ke atas menyerupai membuka layar laptop.'
-    },
-    { 
-      id: 4, 
-      word: 'Aplikasi', 
-      category: 'Teknologi', 
-      region: 'Jakarta', 
-      status: 'Rejected' as const, 
-      date: '2 hari yang lalu',
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      description: 'Isyarat aplikasi digambarkan dengan tangan dominan membentuk huruf A dan ditempelkan di telapak tangan kiri yang terbuka datar.'
-    },
-  ]);
+  // 1. Dynamic Recent Uploads and Signs State from Server Backend
+  const [signs, setSigns] = useState<any[]>([]);
+  const [recentUploads, setRecentUploads] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 2. Dynamic Manage Signs (Kelola Isyarat) State
-  const [signs, setSigns] = useState<any[]>(() => {
-    const saved = localStorage.getItem('garda_signs');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.map((s: any) => ({
-          ...s,
-          status: s.status || 'Approved'
-        }));
-      } catch (e) {
-        console.error(e);
+  const fetchSigns = async () => {
+    try {
+      const res = await fetch('/api/signs');
+      if (res.ok) {
+        const data = await res.json();
+        setSigns(data);
+        setRecentUploads(data.slice(0, 6));
       }
+    } catch (e) {
+      console.error("Gagal mengambil data isyarat:", e);
+    } finally {
+      setIsLoading(false);
     }
-    const initialSigns = [
-      { 
-        id: 1, 
-        word: 'Terima Kasih', 
-        category: 'Harian', 
-        region: 'Jakarta', 
-        status: 'Approved' as const, 
-        informant: 'Rizki Ardhana', 
-        date: '2024-01-10',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Gerakan telapak tangan kanan menempel di dagu lalu diayunkan ke depan sebagai simbol penghormatan dan terima kasih.'
-      },
-      { 
-        id: 2, 
-        word: 'Rumah', 
-        category: 'Harian', 
-        region: 'Yogyakarta', 
-        status: 'Approved' as const, 
-        informant: 'Ahmad Hadi', 
-        date: '2024-01-12',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Ujung-ujung jari kedua tangan dipertemukan di atas kepala membentuk sudut segitiga menyerupai atap rumah.'
-      },
-      { 
-        id: 3, 
-        word: 'Makan', 
-        category: 'Harian', 
-        region: 'Bali', 
-        status: 'Approved' as const, 
-        informant: 'Ni Wayan', 
-        date: '2024-01-15',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Jari-jari tangan dominan dikuncupkan lalu diarahkan ke depan mulut berulang-ulang seperti menyuap makanan.'
-      },
-      { 
-        id: 4, 
-        word: 'Sinyal', 
-        category: 'Teknologi', 
-        region: 'Papua', 
-        status: 'Pending' as const, 
-        informant: 'Elias W.', 
-        date: '2024-01-20',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Isyarat sinyal digerakkan dengan mengangkat tangan dominan ke atas dan menggerakkan jari manis serta kelingking berulang seperti gelombang.'
-      },
-      { 
-        id: 5, 
-        word: 'Laptop', 
-        category: 'Teknologi', 
-        region: 'Nasional', 
-        status: 'Approved' as const, 
-        informant: 'Rizki Ardhana', 
-        date: '2024-01-22',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Isyarat laptop digambarkan dengan menangkupkan kedua telapak tangan sejajar dada lalu membukanya ke atas menyerupai membuka layar laptop.'
-      },
-      { 
-        id: 6, 
-        word: 'Aplikasi', 
-        category: 'Teknologi', 
-        region: 'Jakarta', 
-        status: 'Rejected' as const, 
-        informant: 'Rani K.', 
-        date: '2024-01-24',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: '/bisindo_gesture_placeholder.png',
-        description: 'Isyarat aplikasi digambarkan dengan tangan dominan membentuk huruf A dan ditempelkan di telapak tangan kiri yang terbuka datar.'
-      },
-    ];
-    localStorage.setItem('garda_signs', JSON.stringify(initialSigns));
-    return initialSigns;
-  });
+  };
 
   useEffect(() => {
-    localStorage.setItem('garda_signs', JSON.stringify(signs));
-  }, [signs]);
+    fetchSigns();
+  }, []);
 
   const [signsFilter, setSignsFilter] = useState<'All' | 'Approved' | 'Pending' | 'Rejected'>('All');
   const [signsSearch, setSignsSearch] = useState('');
@@ -357,23 +241,61 @@ export function DashboardPage() {
   };
 
   // Sign Actions
-  const handleApproveSign = (id: number) => {
-    setSigns(prev => prev.map(s => s.id === id ? { ...s, status: 'Approved' } : s));
-    // also sync recentUploads if present
-    setRecentUploads(prev => prev.map(u => u.id === id ? { ...u, status: 'Approved' } : u));
-    triggerToast('Kosa isyarat berhasil disetujui!');
+  const handleApproveSign = async (id: number) => {
+    try {
+      const res = await fetch(`/api/signs/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Approved' })
+      });
+      if (res.ok) {
+        await fetchSigns();
+        triggerToast('Kosa isyarat berhasil disetujui!');
+      } else {
+        triggerToast('Gagal menyetujui kosa isyarat.');
+      }
+    } catch (err) {
+      console.error(err);
+      triggerToast('Gagal menyetujui kosa isyarat.');
+    }
   };
 
-  const handleRejectSign = (id: number) => {
-    setSigns(prev => prev.map(s => s.id === id ? { ...s, status: 'Rejected' } : s));
-    setRecentUploads(prev => prev.map(u => u.id === id ? { ...u, status: 'Rejected' } : u));
-    triggerToast('Kosa isyarat telah ditolak.');
+  const handleRejectSign = async (id: number) => {
+    try {
+      const res = await fetch(`/api/signs/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Rejected' })
+      });
+      if (res.ok) {
+        await fetchSigns();
+        triggerToast('Kosa isyarat telah ditolak.');
+      } else {
+        triggerToast('Gagal menolak kosa isyarat.');
+      }
+    } catch (err) {
+      console.error(err);
+      triggerToast('Gagal menolak kosa isyarat.');
+    }
   };
 
-  const handleDeleteSign = (id: number) => {
-    setSigns(prev => prev.filter(s => s.id !== id));
-    setRecentUploads(prev => prev.filter(u => u.id !== id));
-    triggerToast('Kosa isyarat berhasil dihapus.');
+  const handleDeleteSign = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus kosa isyarat ini?')) {
+      try {
+        const res = await fetch(`/api/signs/${id}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          await fetchSigns();
+          triggerToast('Kosa isyarat berhasil dihapus.');
+        } else {
+          triggerToast('Gagal menghapus kosa isyarat.');
+        }
+      } catch (err) {
+        console.error(err);
+        triggerToast('Gagal menghapus kosa isyarat.');
+      }
+    }
   };
 
   // Informant Actions
@@ -504,28 +426,33 @@ export function DashboardPage() {
     }
 
     if (editingSign) {
-      setSigns(prev => prev.map(s => s.id === editingSign.id ? {
-        ...s,
+      const updatedFields = {
         word: word.trim(),
         category: category,
         region: region.trim(),
         videoUrl: finalVideoUrl,
         description: description.trim() || 'Deskripsi gerakan isyarat baru.'
-      } : s));
+      };
 
-      setRecentUploads(prev => prev.map(u => u.id === editingSign.id ? {
-        ...u,
-        word: word.trim(),
-        category: category,
-        region: region.trim(),
-        videoUrl: finalVideoUrl,
-        description: description.trim() || 'Deskripsi gerakan isyarat baru.'
-      } : u));
-
-      setSelectedFile(null);
-      setEditingSign(null);
-      closeUploadModal();
-      triggerToast('Perubahan kosa isyarat berhasil disimpan!');
+      try {
+        const res = await fetch(`/api/signs/${editingSign.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedFields)
+        });
+        if (res.ok) {
+          await fetchSigns();
+          setSelectedFile(null);
+          setEditingSign(null);
+          closeUploadModal();
+          triggerToast('Perubahan kosa isyarat berhasil disimpan!');
+        } else {
+          triggerToast('Gagal menyimpan perubahan.');
+        }
+      } catch (err) {
+        console.error(err);
+        triggerToast('Gagal menyimpan perubahan.');
+      }
       return;
     }
 
@@ -540,37 +467,35 @@ export function DashboardPage() {
       console.error(e);
     }
 
-    const newId = Date.now();
-    
-    const newUpload = {
-      id: newId,
-      word: word.trim(),
-      category: category,
-      region: region.trim(),
-      status: 'Pending' as const,
-      date: 'Baru saja',
-      videoUrl: finalVideoUrl,
-      description: description.trim() || 'Deskripsi gerakan isyarat baru.'
-    };
-
     const newSign = {
-      id: newId,
       word: word.trim(),
       category: category,
       region: region.trim(),
-      status: 'Pending' as const,
+      status: 'Approved' as const,
       informant: currentInformantName,
       date: new Date().toISOString().split('T')[0],
       videoUrl: finalVideoUrl,
       description: description.trim() || 'Deskripsi gerakan isyarat baru.'
     };
 
-    setRecentUploads(prev => [newUpload, ...prev]);
-    setSigns(prev => [newSign, ...prev]);
-
-    setSelectedFile(null);
-    closeUploadModal();
-    triggerToast('Kosa isyarat berhasil di-upload dan menunggu persetujuan.');
+    try {
+      const res = await fetch('/api/signs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSign)
+      });
+      if (res.ok) {
+        await fetchSigns();
+        setSelectedFile(null);
+        closeUploadModal();
+        triggerToast('Kosa isyarat berhasil di-publish!');
+      } else {
+        triggerToast('Gagal mengupload kosa isyarat.');
+      }
+    } catch (err) {
+      console.error(err);
+      triggerToast('Gagal mengupload kosa isyarat.');
+    }
   };
 
   // Calculate dynamic stats
@@ -765,11 +690,24 @@ export function DashboardPage() {
                              <td className="px-6 py-4">
                                   <select
                                     value={item.status}
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                       const newStatus = e.target.value as 'Approved' | 'Pending' | 'Rejected';
-                                      setSigns(prev => prev.map(s => s.id === item.id ? { ...s, status: newStatus } : s));
-                                      setRecentUploads(prev => prev.map(u => u.id === item.id ? { ...u, status: newStatus } : u));
-                                      triggerToast(`Status berhasil diubah menjadi: ${newStatus === 'Approved' ? 'Disetujui' : newStatus === 'Pending' ? 'Menunggu' : 'Ditolak'}`);
+                                      try {
+                                        const res = await fetch(`/api/signs/${item.id}`, {
+                                          method: 'PUT',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ status: newStatus })
+                                        });
+                                        if (res.ok) {
+                                          await fetchSigns();
+                                          triggerToast(`Status berhasil diubah menjadi: ${newStatus === 'Approved' ? 'Disetujui' : newStatus === 'Pending' ? 'Menunggu' : 'Ditolak'}`);
+                                        } else {
+                                          triggerToast('Gagal memperbarui status.');
+                                        }
+                                      } catch (err) {
+                                        console.error(err);
+                                        triggerToast('Gagal memperbarui status.');
+                                      }
                                     }}
                                     className={cn(
                                        "text-[10px] font-bold px-2 py-0.5 rounded-full border outline-none cursor-pointer bg-transparent transition-colors",
@@ -914,13 +852,26 @@ export function DashboardPage() {
                             <td className="px-4 py-4 text-xs text-slate-600 font-medium">{sign.informant}</td>
                             <td className="px-4 py-4 text-xs text-slate-400">{sign.date}</td>
                             <td className="px-4 py-4">
-                                 <select
+                                  <select
                                    value={sign.status}
-                                   onChange={(e) => {
+                                   onChange={async (e) => {
                                      const newStatus = e.target.value as 'Approved' | 'Pending' | 'Rejected';
-                                     setSigns(prev => prev.map(s => s.id === sign.id ? { ...s, status: newStatus } : s));
-                                     setRecentUploads(prev => prev.map(u => u.id === sign.id ? { ...u, status: newStatus } : u));
-                                     triggerToast(`Status berhasil diubah menjadi: ${newStatus === 'Approved' ? 'Disetujui' : newStatus === 'Pending' ? 'Menunggu' : 'Ditolak'}`);
+                                     try {
+                                       const res = await fetch(`/api/signs/${sign.id}`, {
+                                         method: 'PUT',
+                                         headers: { 'Content-Type': 'application/json' },
+                                         body: JSON.stringify({ status: newStatus })
+                                       });
+                                       if (res.ok) {
+                                         await fetchSigns();
+                                         triggerToast(`Status berhasil diubah menjadi: ${newStatus === 'Approved' ? 'Disetujui' : newStatus === 'Pending' ? 'Menunggu' : 'Ditolak'}`);
+                                       } else {
+                                         triggerToast('Gagal memperbarui status.');
+                                       }
+                                     } catch (err) {
+                                       console.error(err);
+                                       triggerToast('Gagal memperbarui status.');
+                                     }
                                    }}
                                    className={cn(
                                      "text-[10px] font-bold px-2 py-0.5 rounded-full border outline-none cursor-pointer bg-transparent transition-colors",
@@ -1556,12 +1507,25 @@ export function DashboardPage() {
                       <span className="text-slate-400 block font-semibold mb-1">Status</span>
                       <select
                          value={previewSign.status}
-                         onChange={(e) => {
+                         onChange={async (e) => {
                            const newStatus = e.target.value as 'Approved' | 'Pending' | 'Rejected';
-                           setSigns(prev => prev.map(s => s.id === previewSign.id ? { ...s, status: newStatus } : s));
-                           setRecentUploads(prev => prev.map(u => u.id === previewSign.id ? { ...u, status: newStatus } : u));
-                           setPreviewSign(prev => prev ? { ...prev, status: newStatus } : null);
-                           triggerToast(`Status berhasil diubah menjadi: ${newStatus === 'Approved' ? 'Disetujui' : newStatus === 'Pending' ? 'Menunggu' : 'Ditolak'}`);
+                           try {
+                             const res = await fetch(`/api/signs/${previewSign.id}`, {
+                               method: 'PUT',
+                               headers: { 'Content-Type': 'application/json' },
+                               body: JSON.stringify({ status: newStatus })
+                             });
+                             if (res.ok) {
+                               await fetchSigns();
+                               setPreviewSign(prev => prev ? { ...prev, status: newStatus } : null);
+                               triggerToast(`Status berhasil diubah menjadi: ${newStatus === 'Approved' ? 'Disetujui' : newStatus === 'Pending' ? 'Menunggu' : 'Ditolak'}`);
+                             } else {
+                               triggerToast('Gagal memperbarui status.');
+                             }
+                           } catch (err) {
+                             console.error(err);
+                             triggerToast('Gagal memperbarui status.');
+                           }
                          }}
                          className={cn(
                            "font-bold bg-transparent outline-none cursor-pointer border-b border-dashed py-0.5 text-sm w-full",

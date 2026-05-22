@@ -288,39 +288,34 @@ export function ProfilePage() {
     }
   };
 
-  const [myComments] = useState<{
-    signId: string;
-    signWord: string;
-    commentId: string;
-    text: string;
-    createdAt: string;
-  }[]>(() => {
-    const list: any[] = [];
-    const signsSaved = localStorage.getItem('garda_signs');
-    let signs: any[] = [];
-    if (signsSaved) {
+  const [myComments, setMyComments] = useState<any[]>([]);
+  const [myContributions, setMyContributions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
       try {
-        signs = JSON.parse(signsSaved);
-      } catch (e) { }
-    }
+        setIsLoading(true);
+        const res = await fetch('/api/signs');
+        if (res.ok) {
+          const allSigns = await res.json();
+          const userName = profile?.name || 'Rizki Ardhana';
 
-    const userName = profile?.name || 'Rizki Ardhana';
+          // Filter contributions
+          const contributions = allSigns.filter(
+            (s: any) => s.informant?.toLowerCase() === userName.toLowerCase()
+          );
+          setMyContributions(contributions);
 
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('garda_comments_')) {
-        const signId = key.replace('garda_comments_', '');
-        const commentsSaved = localStorage.getItem(key);
-        if (commentsSaved) {
-          try {
-            const commentsParsed = JSON.parse(commentsSaved);
-            if (Array.isArray(commentsParsed)) {
-              commentsParsed.forEach((c: any) => {
-                if (c.userName === userName || c.id.startsWith('c_')) {
-                  const matchingSign = signs.find(s => String(s.id) === String(signId));
-                  list.push({
-                    signId,
-                    signWord: matchingSign?.word || 'Kosa Kata Isyarat',
+          // Filter comments
+          const commentsList: any[] = [];
+          allSigns.forEach((s: any) => {
+            if (s.comments && Array.isArray(s.comments)) {
+              s.comments.forEach((c: any) => {
+                if (c.userName?.toLowerCase() === userName.toLowerCase()) {
+                  commentsList.push({
+                    signId: String(s.id),
+                    signWord: s.word || 'Kosa Kata Isyarat',
                     commentId: c.id,
                     text: c.text,
                     createdAt: c.createdAt
@@ -328,12 +323,18 @@ export function ProfilePage() {
                 }
               });
             }
-          } catch (e) { }
+          });
+          setMyComments(commentsList);
         }
+      } catch (err) {
+        console.error('Error loading profile contributions/comments:', err);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    return list;
-  });
+    };
+
+    fetchProfileData();
+  }, [profile.name]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -394,35 +395,6 @@ export function ProfilePage() {
     });
     setIsEditing(false);
   };
-
-  const myContributions = [
-    {
-      id: '1',
-      word: 'Terima Kasih',
-      category: 'Harian',
-      region: 'Jakarta',
-      thumbnailUrl: '/bisindo_gesture_placeholder.png',
-      videoUrl: '#',
-      description: 'Gerakan tangan menempel di dagu lalu digerakkan ke depan sebagai bentuk apresiasi.',
-      informantId: 'inf1',
-      likes: 124,
-      bookmarks: 45,
-      createdAt: '2024-01-10'
-    },
-    {
-      id: '5',
-      word: 'Telepon',
-      category: 'Teknologi',
-      region: 'Nasional',
-      thumbnailUrl: '/bisindo_gesture_placeholder.png',
-      videoUrl: '#',
-      description: 'Ibu jari dan kelingking menempel di telinga dan mulut melambangkan gagang telepon.',
-      informantId: 'inf5',
-      likes: 156,
-      bookmarks: 32,
-      createdAt: '2024-01-22'
-    }
-  ];
 
   return (
     <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
@@ -519,7 +491,7 @@ export function ProfilePage() {
           <div className="space-y-8">
             <div
               className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm leading-relaxed cursor-pointer hover:shadow-md transition-shadow group/about"
-              onClick={() => speakText(`Tentang Saya. Bio: ${profile.bio}. Total Kontribusi: ${profile.contributions} Video. Peringkat Komunitas: Perak.`)}
+              onClick={() => speakText(`Tentang Saya. Bio: ${profile.bio}. Total Kontribusi: ${myContributions.length} Video. Peringkat Komunitas: Perak.`)}
               title={settingsForm.textToSpeech ? "Klik untuk mendengarkan audio" : undefined}
             >
               <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center justify-between">
@@ -533,7 +505,7 @@ export function ProfilePage() {
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-400">Total Kontribusi</span>
-                  <span className="font-bold text-lg">{profile.contributions} Video</span>
+                  <span className="font-bold text-lg">{myContributions.length} Video</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-400">Peringkat Komunitas</span>
@@ -601,11 +573,21 @@ export function ProfilePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {myContributions.map(sign => (
-                  <SignCard key={sign.id} sign={sign} />
-                ))}
-              </div>
+              {isLoading ? (
+                <div className="text-center py-12 bg-slate-50/50 rounded-[2rem] border border-slate-100 col-span-2">
+                  <p className="text-slate-400 text-sm italic animate-pulse">Memuat kosa isyarat kontribusi Anda...</p>
+                </div>
+              ) : myContributions.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50/50 rounded-[2rem] border border-slate-100 col-span-2">
+                  <p className="text-slate-400 text-sm italic">Belum ada video isyarat yang Anda kontribusikan.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {myContributions.map(sign => (
+                    <SignCard key={sign.id} sign={sign} />
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm">
@@ -810,7 +792,11 @@ export function ProfilePage() {
                 <h3 className="text-2xl font-bold">Diskusi Komunitas</h3>
               </div>
 
-              {myComments.length === 0 ? (
+              {isLoading ? (
+                <div className="text-center py-10 bg-slate-50/50 rounded-3xl border border-slate-100">
+                  <p className="text-slate-400 text-sm italic animate-pulse">Memuat diskusi Anda...</p>
+                </div>
+              ) : myComments.length === 0 ? (
                 <div className="text-center py-10 bg-slate-50/50 rounded-3xl border border-slate-100">
                   <p className="text-slate-400 text-sm italic">Belum ada diskusi atau masukan yang Anda kirimkan.</p>
                   <Link to="/dictionary" className="mt-4 inline-block px-6 py-2.5 bg-garda-red text-white text-xs font-bold rounded-xl shadow-md hover:bg-red-700 transition-colors">

@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Share2, Heart, Bookmark, MapPin, User, ArrowLeft, MessageSquare, ShieldCheck, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { SignCard } from '@/src/components/SignCard';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Sign } from '@/src/types';
 
 export function DetailSignPage() {
@@ -10,18 +10,22 @@ export function DetailSignPage() {
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
 
-  // Load signs list from localStorage to dynamically match the detail view
-  const [localSigns] = useState<any[]>(() => {
-    const saved = localStorage.getItem('garda_signs');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
+  // Load signs list from server to dynamically match the detail view
+  const [localSigns, setLocalSigns] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/signs')
+      .then(res => res.json())
+      .then(data => {
+        setLocalSigns(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Gagal memuat kosa isyarat:", err);
+        setIsLoading(false);
+      });
+  }, [id]);
 
   // Find current sign from database, fallback to mock details if not found
   const rawSign = localSigns.find(s => String(s.id) === String(id));
@@ -57,42 +61,15 @@ export function DetailSignPage() {
   });
 
   // Comments state
-  const [comments, setComments] = useState<{
-    id: string;
-    userName: string;
-    avatarUrl: string;
-    text: string;
-    createdAt: string;
-  }[]>(() => {
-    const saved = localStorage.getItem(`garda_comments_${id}`);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    const defaults = [
-      {
-        id: 'c1',
-        userName: 'Ahmad Hadi',
-        avatarUrl: '',
-        text: `Isyarat "${sign.word}" di wilayah kami agak sedikit berbeda di bagian ketukan tangannya. Senang melihat variasi daerah ini terdokumentasi!`,
-        createdAt: '1 hari yang lalu'
-      },
-      {
-        id: 'c2',
-        userName: 'Tim Ahli PUSBISINDO',
-        avatarUrl: '/profil.jpg',
-        text: 'Akurasi gerakan ini sudah sesuai dengan standar regional dan linguistik BISINDO. Bagus sekali kontribusinya!',
-        createdAt: 'Baru saja'
-      }
-    ];
-    localStorage.setItem(`garda_comments_${id}`, JSON.stringify(defaults));
-    return defaults;
-  });
+  const [comments, setComments] = useState<any[]>([]);
 
-  const handleSendComment = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (rawSign) {
+      setComments(rawSign.comments || []);
+    }
+  }, [rawSign]);
+
+  const handleSendComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim()) return;
 
@@ -104,32 +81,68 @@ export function DetailSignPage() {
       createdAt: 'Baru saja'
     };
 
-    const updated = [...comments, newComment];
-    setComments(updated);
-    localStorage.setItem(`garda_comments_${id}`, JSON.stringify(updated));
-    setCommentText('');
+    try {
+      const res = await fetch(`/api/signs/${id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newComment)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data.comments);
+        setCommentText('');
+        triggerToast('Komentar berhasil dikirim!');
+      } else {
+        triggerToast('Gagal mengirim komentar.');
+      }
+    } catch (err) {
+      console.error(err);
+      triggerToast('Gagal mengirim komentar.');
+    }
   };
 
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
 
-  const handleUpdateComment = (commentId: string) => {
+  const handleUpdateComment = async (commentId: string) => {
     if (!editingText.trim()) return;
-    const updated = comments.map(c => 
-      c.id === commentId ? { ...c, text: editingText.trim() } : c
-    );
-    setComments(updated);
-    localStorage.setItem(`garda_comments_${id}`, JSON.stringify(updated));
-    setEditingCommentId(null);
-    triggerToast('Komentar berhasil diperbarui!');
+    try {
+      const res = await fetch(`/api/signs/${id}/comments/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: editingText.trim() })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data.comments);
+        setEditingCommentId(null);
+        triggerToast('Komentar berhasil diperbarui!');
+      } else {
+        triggerToast('Gagal memperbarui komentar.');
+      }
+    } catch (err) {
+      console.error(err);
+      triggerToast('Gagal memperbarui komentar.');
+    }
   };
 
-  const handleDeleteComment = (commentId: string) => {
+  const handleDeleteComment = async (commentId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus masukan ini?')) {
-      const updated = comments.filter(c => c.id !== commentId);
-      setComments(updated);
-      localStorage.setItem(`garda_comments_${id}`, JSON.stringify(updated));
-      triggerToast('Komentar berhasil dihapus.');
+      try {
+        const res = await fetch(`/api/signs/${id}/comments/${commentId}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setComments(data.comments);
+          triggerToast('Komentar berhasil dihapus.');
+        } else {
+          triggerToast('Gagal menghapus komentar.');
+        }
+      } catch (err) {
+        console.error(err);
+        triggerToast('Gagal menghapus komentar.');
+      }
     }
   };
 
@@ -239,7 +252,7 @@ export function DetailSignPage() {
 
   // Build some related signs from the database, excluding the current one
   const relatedSigns: Sign[] = localSigns
-    .filter((s: any) => String(s.id) !== String(id) && s.status === 'Approved')
+    .filter((s: any) => String(s.id) !== String(id) && s.status !== 'Rejected')
     .slice(0, 2)
     .map((s: any) => ({
       id: String(s.id),
@@ -254,6 +267,15 @@ export function DetailSignPage() {
       bookmarks: s.bookmarks || 0,
       createdAt: s.date || s.createdAt || '2026-05-18'
     }));
+
+  if (isLoading) {
+    return (
+      <div className="pt-24 min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-garda-red border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-500 font-semibold animate-pulse">Memuat detail kosa isyarat...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
