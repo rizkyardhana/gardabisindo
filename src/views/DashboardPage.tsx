@@ -444,8 +444,8 @@ export function DashboardPage() {
     
     // Check if we need to upload a video
     if (uploadMode === 'file' && selectedFile) {
-      if (selectedFile.size > 4.5 * 1024 * 1024) {
-        triggerToast('Ukuran file video terlalu besar. Maksimal 4.5MB untuk serverless deployment.');
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        triggerToast('Ukuran file video terlalu besar. Maksimal 10MB.');
         return;
       }
       setIsUploading(true);
@@ -1388,7 +1388,7 @@ export function DashboardPage() {
                       />
                       <Video className="w-8 h-8 text-slate-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
                       <span className="block text-xs font-bold text-slate-700">{fileName || "Pilih file video gerakan isyarat"}</span>
-                      <span className="block text-[10px] text-slate-400 mt-1">MP4, WebM, atau MOV (Maks. 4.5MB)</span>
+                      <span className="block text-[10px] text-slate-400 mt-1">MP4, WebM, atau MOV (Maks. 10MB)</span>
                     </div>
                   ) : (
                     <div className="bg-slate-950 rounded-2xl overflow-hidden aspect-video relative flex items-center justify-center border border-slate-800 group shadow-inner">
