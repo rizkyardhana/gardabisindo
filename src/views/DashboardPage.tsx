@@ -72,11 +72,17 @@ export function DashboardPage() {
     if (!stream) return;
     setRecordedChunks([]);
     
-    let options = {};
+    let options: any = {};
     if (MediaRecorder.isTypeSupported('video/webm')) {
-      options = { mimeType: 'video/webm' };
+      options = { 
+        mimeType: 'video/webm',
+        videoBitsPerSecond: 400000
+      };
     } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-      options = { mimeType: 'video/mp4' };
+      options = { 
+        mimeType: 'video/mp4',
+        videoBitsPerSecond: 400000
+      };
     }
 
     try {
@@ -440,14 +446,12 @@ export function DashboardPage() {
     if (uploadMode === 'file' && selectedFile) {
       setIsUploading(true);
       try {
-        const ext = selectedFile.name.split('.').pop() || 'mp4';
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
         const response = await fetch('/api/upload-video', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            'x-file-extension': ext
-          },
-          body: selectedFile
+          body: formData
         });
         
         if (!response.ok) throw new Error("Gagal mengunggah video ke server");
@@ -469,13 +473,12 @@ export function DashboardPage() {
         const ext = mime.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(recordedChunks, { type: mime });
         
+        const formData = new FormData();
+        formData.append('file', blob, `recording.${ext}`);
+
         const response = await fetch('/api/upload-video', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            'x-file-extension': ext
-          },
-          body: blob
+          body: formData
         });
         
         if (!response.ok) throw new Error("Gagal mengunggah video rekaman");

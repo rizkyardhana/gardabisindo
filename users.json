@@ -14,5 +14,13 @@
     "name": "Rizki Ardhana",
     "region": "Jakarta Selatan",
     "bio": "Saya seorang aktivis Tuli yang berdedikasi untuk mendokumentasikan kosa isyarat daerah Jakarta agar tidak terlupakan oleh sejarah perkembangan teknologi."
+  },
+  {
+    "name": "Rizky Ardhana",
+    "email": "rizky1@gmail.com",
+    "region": "Yogyakarta",
+    "password": "123456789",
+    "role": "informant",
+    "bio": "Saya seorang Informan Kontributor di platform Garda BISINDO."
   }
 ]
