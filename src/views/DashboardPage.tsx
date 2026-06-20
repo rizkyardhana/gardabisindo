@@ -189,9 +189,11 @@ const TRANSLATIONS = {
 export function DashboardPage() {
   const [settings, setSettings] = useState(() => {
     try {
-      const saved = localStorage.getItem('system_settings');
-      if (saved) {
-        return JSON.parse(saved);
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('system_settings');
+        if (saved) {
+          return JSON.parse(saved);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -212,7 +214,7 @@ export function DashboardPage() {
   };
 
   const [userName, setUserName] = useState('Rizki Ardhana');
-  const userRole = localStorage.getItem('auth_role') || 'informant';
+  const userRole = typeof window !== 'undefined' ? (localStorage.getItem('auth_role') || 'informant') : 'informant';
 
   useEffect(() => {
     try {
