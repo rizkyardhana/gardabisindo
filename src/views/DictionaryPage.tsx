@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Search, Grid, List as ListIcon, Bookmark, Heart, ChevronDown, SlidersHorizontal, RotateCcw, Sparkles, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SignCard } from '@/src/components/SignCard';
-import { REGIONS } from '@/src/constants';
 import type { Sign } from '@/src/types';
 import { cn } from '@/src/lib/utils';
 
@@ -36,6 +35,7 @@ export function DictionaryPage() {
 
   const [localSigns, setLocalSigns] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [regions, setRegions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,6 +57,15 @@ export function DictionaryPage() {
       })
       .catch(err => {
         console.error("Gagal memuat kategori dari server:", err);
+      });
+
+    fetch('/api/regions')
+      .then(res => res.json())
+      .then(data => {
+        setRegions(data);
+      })
+      .catch(err => {
+        console.error("Gagal memuat wilayah dari server:", err);
       });
   }, []);
 
@@ -237,7 +246,7 @@ export function DictionaryPage() {
                       onChange={(e) => setSelectedRegion(e.target.value)}
                     >
                       <option value="Nasional">Semua Wilayah</option>
-                      {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                      {regions.filter(r => r.name !== 'Nasional').map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
                     </select>
                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                   </div>

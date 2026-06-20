@@ -8,6 +8,7 @@ import { loadUsers, saveUsers } from "./src/lib/usersDb";
 import { sendRecoveryEmail } from "./src/lib/email";
 import { put } from "@vercel/blob";
 import { loadCategories, saveCategories } from "./src/lib/categoriesDb";
+import { loadRegions, saveRegions } from "./src/lib/regionsDb";
 
 dotenv.config();
 
@@ -311,6 +312,59 @@ export async function createServer() {
     } catch (e: any) {
       console.error("Gagal menghapus kategori:", e);
       res.status(500).json({ error: "Gagal menghapus kategori." });
+    }
+  });
+
+  // Regions endpoints
+  app.get("/api/regions", async (req, res) => {
+    try {
+      const regionsDb = await loadRegions();
+      res.json(regionsDb);
+    } catch (e: any) {
+      console.error("Gagal memuat wilayah:", e);
+      res.status(500).json({ error: "Gagal memuat wilayah dari database." });
+    }
+  });
+
+  app.post("/api/regions", async (req, res) => {
+    const { name } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: "Nama wilayah wajib diisi." });
+    }
+    try {
+      const regionsDb = await loadRegions();
+      const exists = regionsDb.some(r => r.name.toLowerCase() === name.toLowerCase());
+      if (exists) {
+        return res.status(400).json({ error: "Wilayah tersebut sudah terdaftar." });
+      }
+      
+      const newRegion = {
+        id: Date.now(),
+        name
+      };
+      regionsDb.push(newRegion);
+      await saveRegions(regionsDb);
+      res.json({ success: true, region: newRegion });
+    } catch (e: any) {
+      console.error("Gagal menambahkan wilayah:", e);
+      res.status(500).json({ error: "Gagal menyimpan wilayah baru." });
+    }
+  });
+
+  app.delete("/api/regions/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+      const regionsDb = await loadRegions();
+      const index = regionsDb.findIndex(r => String(r.id) === String(id));
+      if (index === -1) {
+        return res.status(404).json({ error: "Wilayah tidak ditemukan." });
+      }
+      const deleted = regionsDb.splice(index, 1);
+      await saveRegions(regionsDb);
+      res.json({ success: true, deletedRegion: deleted[0] });
+    } catch (e: any) {
+      console.error("Gagal menghapus wilayah:", e);
+      res.status(500).json({ error: "Gagal menghapus wilayah." });
     }
   });
 

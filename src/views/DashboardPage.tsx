@@ -1,4 +1,4 @@
-import { LayoutDashboard, Video, Users, MessageSquare, Plus, Bell, Search, Settings, ArrowUpRight, CheckCircle2, Clock, Trash2, Check, X, FolderPlus, Globe, UserCheck, AlertCircle, ToggleLeft, ToggleRight, Play, Camera, PlusCircle, Pencil } from 'lucide-react';
+import { LayoutDashboard, Video, Users, MessageSquare, Plus, Bell, Search, Settings, ArrowUpRight, CheckCircle2, Clock, Trash2, Check, X, FolderPlus, Globe, UserCheck, AlertCircle, ToggleLeft, ToggleRight, Play, Camera, PlusCircle, Pencil, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/src/lib/utils';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -22,7 +22,7 @@ export function DashboardPage() {
   }, []);
 
   // Navigation tabs in Indonesian
-  const [activeTab, setActiveTab] = useState<'Ikhtisar' | 'Kelola Isyarat' | 'Informan' | 'Kategori' | 'Pengaturan'>('Ikhtisar');
+  const [activeTab, setActiveTab] = useState<'Ikhtisar' | 'Kelola Isyarat' | 'Informan' | 'Kategori' | 'Wilayah' | 'Pengaturan'>('Ikhtisar');
   
   // Dialog upload state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -225,10 +225,23 @@ export function DashboardPage() {
     }
   };
 
+  const fetchRegions = async () => {
+    try {
+      const res = await fetch('/api/regions');
+      if (res.ok) {
+        const data = await res.json();
+        setRegions(data);
+      }
+    } catch (e) {
+      console.error("Gagal mengambil data wilayah:", e);
+    }
+  };
+
   useEffect(() => {
     fetchSigns();
     fetchCategories();
     fetchInformants();
+    fetchRegions();
   }, []);
 
   const [signsFilter, setSignsFilter] = useState<'All' | 'Approved' | 'Pending' | 'Rejected'>('All');
@@ -247,6 +260,10 @@ export function DashboardPage() {
 
   const [newCatName, setNewCatName] = useState('');
   const [newCatDesc, setNewCatDesc] = useState('');
+
+  // Dynamic Regions (Wilayah) State
+  const [regions, setRegions] = useState<any[]>([]);
+  const [newRegName, setNewRegName] = useState('');
 
   // 5. Settings (Pengaturan) State
   const [settings, setSettings] = useState({
@@ -418,6 +435,59 @@ export function DashboardPage() {
       } catch (err) {
         console.error(err);
         triggerToast('Gagal menghapus kategori.');
+      }
+    }
+  };
+
+  // Region Actions
+  const handleAddRegion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRegName.trim()) return;
+    const exists = regions.some(r => r.name.toLowerCase() === newRegName.trim().toLowerCase());
+    if (exists) {
+      triggerToast('Wilayah sudah terdaftar!');
+      return;
+    }
+    
+    const newReg = {
+      name: newRegName.trim()
+    };
+
+    try {
+      const res = await fetch('/api/regions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newReg)
+      });
+      if (res.ok) {
+        await fetchRegions();
+        setNewRegName('');
+        triggerToast('Wilayah baru berhasil ditambahkan!');
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        triggerToast(errorData.error || 'Gagal menambahkan wilayah.');
+      }
+    } catch (err) {
+      console.error(err);
+      triggerToast('Gagal menambahkan wilayah.');
+    }
+  };
+
+  const handleDeleteRegion = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus wilayah ini?')) {
+      try {
+        const res = await fetch(`/api/regions/${id}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          await fetchRegions();
+          triggerToast('Wilayah berhasil dihapus.');
+        } else {
+          triggerToast('Gagal menghapus wilayah.');
+        }
+      } catch (err) {
+        console.error(err);
+        triggerToast('Gagal menghapus wilayah.');
       }
     }
   };
@@ -629,6 +699,7 @@ export function DashboardPage() {
                     { id: 'Kelola Isyarat', label: 'Kelola Isyarat', icon: Video, badge: pendingCount },
                     { id: 'Informan', label: 'Informan', icon: Users },
                     { id: 'Kategori', label: 'Kategori', icon: MessageSquare },
+                    { id: 'Wilayah', label: 'Wilayah', icon: MapPin },
                     { id: 'Pengaturan', label: 'Pengaturan', icon: Settings },
                   ].map((tab) => (
                     <button
@@ -1186,6 +1257,98 @@ export function DashboardPage() {
               </motion.div>
             )}
 
+            {/* TAB 4.5: Wilayah */}
+            {activeTab === 'Wilayah' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+              >
+                {/* Add Region Form (Left) */}
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 h-fit space-y-6">
+                  <h3 className="font-bold text-lg text-slate-950">Tambah Wilayah</h3>
+                  
+                  <form onSubmit={handleAddRegion} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Nama Wilayah</label>
+                      <input 
+                        type="text"
+                        required
+                        value={newRegName}
+                        onChange={e => setNewRegName(e.target.value)}
+                        placeholder="Contoh: Semarang, Surabaya"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-garda-red/20 focus:border-garda-red transition-all"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-garda-red hover:bg-red-700 text-white font-bold rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Tambah Wilayah
+                    </button>
+                  </form>
+                </div>
+
+                {/* Regions List (Right) */}
+                <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-lg text-slate-950">Daftar Wilayah</h3>
+                    <span className="text-xs bg-slate-100 text-slate-600 font-bold px-3 py-1 rounded-full">
+                      {regions.length} Wilayah
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {regions.map((reg) => {
+                      const regSigns = signs.filter(s => s.region && reg.name && s.region.toLowerCase() === reg.name.toLowerCase());
+                      return (
+                        <div 
+                          key={reg.id}
+                          className="bg-slate-50/50 border border-slate-150 p-5 rounded-2xl relative hover:shadow-sm transition-all duration-300 group flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="w-10 h-10 rounded-xl bg-garda-red/5 text-garda-red flex items-center justify-center mb-3">
+                              <MapPin className="w-5 h-5" />
+                            </div>
+                            <h4 className="font-bold text-slate-900 mb-1 text-sm">{reg.name}</h4>
+                            
+                            {/* Mini list of signs belonging to this region */}
+                            <div className="space-y-2 mb-6">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Daftar Kosa Isyarat:</span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {regSigns.length === 0 ? (
+                                  <span className="text-[10px] text-slate-400 italic">Belum ada kosa isyarat</span>
+                                ) : (
+                                  regSigns.map(s => (
+                                    <span key={s.id} className="text-[10px] font-semibold bg-white border border-slate-200 px-2.5 py-1 rounded-xl text-slate-700">
+                                      {s.word}
+                                    </span>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-400 border-t border-slate-100 pt-3">
+                            <span>{regSigns.length} Kosa Kata</span>
+                            
+                            <button
+                              onClick={() => handleDeleteRegion(reg.id)}
+                              className="text-slate-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                              title="Hapus Wilayah"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* TAB 5: Pengaturan */}
             {activeTab === 'Pengaturan' && (
               <motion.div 
@@ -1360,13 +1523,19 @@ export function DashboardPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-slate-700">Wilayah</label>
-                    <input
+                    <select
                       value={region}
                       onChange={(e) => setRegion(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 focus:ring-garda-red/20 transition-all"
-                      placeholder="Nasional"
-                      required
-                    />
+                      className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 focus:ring-garda-red/20 transition-all text-slate-800"
+                    >
+                      {regions.length === 0 ? (
+                        <option value="Nasional">Nasional</option>
+                      ) : (
+                        regions.map(r => (
+                          <option key={r.id} value={r.name}>{r.name}</option>
+                        ))
+                      )}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-slate-700">Kategori</label>
