@@ -9,6 +9,30 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { pathname } = useLocation();
+  const [lang, setLang] = useState('id');
+
+  useEffect(() => {
+    const checkLang = () => {
+      try {
+        const saved = localStorage.getItem('system_settings');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.systemLanguage) {
+            setLang(parsed.systemLanguage);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    checkLang();
+    window.addEventListener('systemSettingsUpdate', checkLang);
+    window.addEventListener('storage', checkLang);
+    return () => {
+      window.removeEventListener('systemSettingsUpdate', checkLang);
+      window.removeEventListener('storage', checkLang);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,7 +46,12 @@ export function Navbar() {
     setIsAuthenticated(!!localStorage.getItem('auth_token'));
   }, [pathname]);
 
-  const navLinks = [
+  const navLinks = lang === 'en' ? [
+    { name: 'Home', path: '/', icon: Home },
+    { name: 'Dictionary', path: '/dictionary', icon: Book },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Profile', path: '/profile', icon: User },
+  ] : [
     { name: 'Beranda', path: '/', icon: Home },
     { name: 'Kamus', path: '/dictionary', icon: Book },
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -50,7 +79,7 @@ export function Navbar() {
               GARDA <span className="text-garda-red">BISINDO</span>
             </span>
             <span className="text-[10px] uppercase tracking-widest font-medium opacity-60">
-              Arsip &amp; Dokumentasi
+              {lang === 'en' ? 'Archive & Documentation' : 'Arsip & Dokumentasi'}
             </span>
           </div>
         </Link>
@@ -80,7 +109,7 @@ export function Navbar() {
               to="/login"
               className="hidden sm:flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white text-garda-red border border-slate-200 hover:bg-red-50 transition-all"
             >
-              Masuk
+              {lang === 'en' ? 'Login' : 'Masuk'}
             </Link>
           ) : (
             <button
@@ -93,7 +122,7 @@ export function Navbar() {
               }}
               className="hidden sm:flex items-center px-4 py-2 text-sm font-medium bg-white text-garda-red border border-slate-200 hover:bg-red-50 transition-all cursor-pointer"
             >
-              Keluar
+              {lang === 'en' ? 'Logout' : 'Keluar'}
             </button>
           )}
 
@@ -140,7 +169,7 @@ export function Navbar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 w-full py-4 bg-white border border-slate-200 text-garda-red rounded-xl font-bold hover:bg-red-50 transition-all"
                 >
-                  Masuk
+                  {lang === 'en' ? 'Login' : 'Masuk'}
                 </Link>
               ) : (
                 <button
@@ -154,7 +183,7 @@ export function Navbar() {
                   }}
                   className="flex items-center justify-center gap-2 w-full py-4 bg-white border border-slate-200 text-garda-red rounded-xl font-bold hover:bg-red-50 transition-all cursor-pointer"
                 >
-                  Keluar
+                  {lang === 'en' ? 'Logout' : 'Keluar'}
                 </button>
               )}
 
@@ -163,7 +192,7 @@ export function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center justify-center gap-2 w-full py-4 bg-garda-red text-white rounded-xl font-bold mt-2"
               >
-                Jelajahi Kamus
+                {lang === 'en' ? 'Explore Dictionary' : 'Jelajahi Kamus'}
               </Link>
             </div>
           </motion.div>
