@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { loadSigns, saveSigns } from "./src/lib/signsDb";
 import { loadUsers, saveUsers } from "./src/lib/usersDb";
 import { sendRecoveryEmail } from "./src/lib/email";
+import { put } from "@vercel/blob";
 
 dotenv.config();
 
@@ -43,15 +44,27 @@ export async function createServer() {
   app.use("/uploads", express.static(uploadDir));
 
   // Route to handle raw binary video upload
-  app.post("/api/upload-video", express.raw({ type: ["video/webm", "video/mp4", "application/octet-stream"], limit: "50mb" }), (req, res) => {
+  app.post("/api/upload-video", express.raw({ type: ["video/webm", "video/mp4", "application/octet-stream"], limit: "50mb" }), async (req, res) => {
     try {
       const ext = req.headers["x-file-extension"] || "webm";
       const filename = `upload_${Date.now()}.${ext}`;
-      const filePath = path.join(uploadDir, filename);
+
+      // Check if Vercel Blob token is available
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+      if (blobToken) {
+        console.log("Uploading video to Vercel Blob...");
+        const blob = await put(filename, req.body, {
+          access: "public",
+          token: blobToken,
+        });
+        console.log(`Video uploaded to Vercel Blob: ${blob.url}`);
+        return res.json({ success: true, videoUrl: blob.url });
+      }
       
+      const filePath = path.join(uploadDir, filename);
       fs.writeFileSync(filePath, req.body);
       
-      console.log(`Video uploaded successfully: ${filename}`);
+      console.log(`Video uploaded successfully to local storage: ${filename}`);
       res.json({ success: true, videoUrl: `/uploads/${filename}` });
     } catch (e: any) {
       console.error("Gagal mengunggah video:", e);

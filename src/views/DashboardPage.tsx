@@ -376,12 +376,14 @@ export function DashboardPage() {
       }
       setIsUploading(true);
       try {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-
+        const ext = selectedFile.name.split('.').pop() || 'webm';
         const response = await fetch('/api/upload-video', {
           method: 'POST',
-          body: formData
+          headers: {
+            'Content-Type': selectedFile.type || 'video/webm',
+            'x-file-extension': ext
+          },
+          body: selectedFile
         });
         
         const data = await response.json().catch(() => ({}));
@@ -405,12 +407,13 @@ export function DashboardPage() {
         const ext = mime.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(recordedChunks, { type: mime });
         
-        const formData = new FormData();
-        formData.append('file', blob, `recording.${ext}`);
-
         const response = await fetch('/api/upload-video', {
           method: 'POST',
-          body: formData
+          headers: {
+            'Content-Type': mime,
+            'x-file-extension': ext
+          },
+          body: blob
         });
         
         const data = await response.json().catch(() => ({}));
