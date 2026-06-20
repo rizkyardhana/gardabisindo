@@ -13,6 +13,7 @@ const TRANSLATIONS = {
     'Wilayah': 'Wilayah',
     'Pengaturan': 'Pengaturan',
     'Penyimpanan Arsip': 'Penyimpanan Arsip',
+    'Terpakai': 'Terpakai',
     'Tambah Kapasitas': 'Tambah Kapasitas',
     
     // Overview/Ikhtisar
@@ -29,12 +30,12 @@ const TRANSLATIONS = {
     
     // Table Headers
     'Kosa Isyarat': 'Kosa Isyarat',
-    'Kategori': 'Kategori',
-    'Wilayah': 'Wilayah',
     'Status': 'Status',
     'Waktu': 'Waktu',
     'Aksi': 'Aksi',
     'Nama': 'Nama',
+    'Kontributor': 'Kontributor',
+    'Tanggal': 'Tanggal',
     'Kontribusi': 'Kontribusi',
     'Bergabung': 'Bergabung',
 
@@ -99,10 +100,11 @@ const TRANSLATIONS = {
     'Ikhtisar': 'Overview',
     'Kelola Isyarat': 'Manage Signs',
     'Informan': 'Informants',
-    'Kategori': 'Categories',
-    'Wilayah': 'Regions',
+    'Kategori': 'Category',
+    'Wilayah': 'Region',
     'Pengaturan': 'Settings',
     'Penyimpanan Arsip': 'Archive Storage',
+    'Terpakai': 'Used',
     'Tambah Kapasitas': 'Upgrade Capacity',
     
     // Overview/Ikhtisar
@@ -119,12 +121,12 @@ const TRANSLATIONS = {
     
     // Table Headers
     'Kosa Isyarat': 'Sign Word',
-    'Kategori': 'Category',
-    'Wilayah': 'Region',
     'Status': 'Status',
     'Waktu': 'Time',
     'Aksi': 'Action',
     'Nama': 'Name',
+    'Kontributor': 'Contributor',
+    'Tanggal': 'Date',
     'Kontribusi': 'Contributions',
     'Bergabung': 'Joined',
 

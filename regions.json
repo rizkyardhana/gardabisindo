@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Nasional"
+  },
+  {
+    "id": 2,
+    "name": "Jakarta"
+  },
+  {
+    "id": 3,
+    "name": "Yogyakarta"
+  },
+  {
+    "id": 4,
+    "name": "Bali"
+  },
+  {
+    "id": 5,
+    "name": "Sumatera Barat"
+  },
+  {
+    "id": 6,
+    "name": "Sulawesi Selatan"
+  },
+  {
+    "id": 7,
+    "name": "Papua"
+  }
+]

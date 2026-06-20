@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Harian",
+    "count": 850,
+    "description": "Isyarat percakapan sehari-hari seperti sapaan, makan, tidur."
+  },
+  {
+    "id": 2,
+    "name": "Teknologi",
+    "count": 120,
+    "description": "Isyarat terkait komputer, internet, gawai, dan teknologi digital."
+  },
+  {
+    "id": 3,
+    "name": "Pendidikan",
+    "count": 240,
+    "description": "Isyarat istilah sekolah, pelajaran, dan dunia akademik."
+  },
+  {
+    "id": 4,
+    "name": "Medis",
+    "count": 95,
+    "description": "Isyarat istilah kesehatan, penyakit, obat, dan rumah sakit."
+  }
+]
