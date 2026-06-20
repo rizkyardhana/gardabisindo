@@ -25,7 +25,9 @@ export async function POST(request: Request) {
       region,
       password,
       role,
-      bio: `Saya seorang ${role === 'informant' ? 'Informan Kontributor' : 'Admin'} di platform Garda BISINDO.`
+      bio: `Saya seorang ${role === 'informant' ? 'Informan Kontributor' : 'Admin'} di platform Garda BISINDO.`,
+      joined: new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }),
+      verified: false
     };
 
     usersDb.push(newUser);

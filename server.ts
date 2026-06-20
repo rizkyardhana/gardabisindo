@@ -113,7 +113,9 @@ export async function createServer() {
         region,
         password,
         role,
-        bio: `Saya seorang ${role === 'informant' ? 'Informan Kontributor' : 'Admin'} di platform Garda BISINDO.`
+        bio: `Saya seorang ${role === 'informant' ? 'Informan Kontributor' : 'Admin'} di platform Garda BISINDO.`,
+        joined: new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }),
+        verified: false
       };
 
       usersDb.push(newUser);
@@ -193,6 +195,67 @@ export async function createServer() {
     } catch (e: any) {
       console.error("Gagal melakukan login:", e);
       res.status(500).json({ error: "Terjadi kesalahan saat memproses login." });
+    }
+  });
+
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await loadUsers();
+      const signs = await loadSigns();
+      const informants = users.filter(u => u.role === 'informant');
+      const mapped = informants.map(u => {
+        const contributions = signs.filter(s => s.informant === u.name).length;
+        const avatar = u.email === 'informan@garda.com' ? '/profil.jpg' : (u.avatar || '');
+        return {
+          id: u.email,
+          name: u.name,
+          email: u.email,
+          region: u.region,
+          joined: u.joined || 'Jan 2024',
+          verified: u.email === 'informan@garda.com' ? true : (u.verified ?? false),
+          contributions,
+          avatar
+        };
+      });
+      res.json(mapped);
+    } catch (e: any) {
+      console.error("Gagal memuat informan:", e);
+      res.status(500).json({ error: "Gagal memuat daftar informan." });
+    }
+  });
+
+  app.put("/api/users/:email", async (req, res) => {
+    const email = req.params.email;
+    const { verified } = req.body;
+    try {
+      const users = await loadUsers();
+      const index = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+      if (index === -1) {
+        return res.status(404).json({ error: "Pengguna tidak ditemukan." });
+      }
+      users[index].verified = verified;
+      await saveUsers(users);
+      res.json({ success: true, user: users[index] });
+    } catch (e: any) {
+      console.error("Gagal memperbarui status verifikasi:", e);
+      res.status(500).json({ error: "Gagal memperbarui status verifikasi." });
+    }
+  });
+
+  app.delete("/api/users/:email", async (req, res) => {
+    const email = req.params.email;
+    try {
+      const users = await loadUsers();
+      const index = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+      if (index === -1) {
+        return res.status(404).json({ error: "Pengguna tidak ditemukan." });
+      }
+      const deleted = users.splice(index, 1);
+      await saveUsers(users);
+      res.json({ success: true, deletedUser: deleted[0] });
+    } catch (e: any) {
+      console.error("Gagal menghapus pengguna:", e);
+      res.status(500).json({ error: "Gagal menghapus pengguna." });
     }
   });
   

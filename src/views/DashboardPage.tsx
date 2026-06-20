@@ -213,21 +213,29 @@ export function DashboardPage() {
     }
   };
 
+  const fetchInformants = async () => {
+    try {
+      const res = await fetch('/api/users');
+      if (res.ok) {
+        const data = await res.json();
+        setInformants(data);
+      }
+    } catch (e) {
+      console.error("Gagal mengambil data informan:", e);
+    }
+  };
+
   useEffect(() => {
     fetchSigns();
     fetchCategories();
+    fetchInformants();
   }, []);
 
   const [signsFilter, setSignsFilter] = useState<'All' | 'Approved' | 'Pending' | 'Rejected'>('All');
   const [signsSearch, setSignsSearch] = useState('');
 
   // 3. Dynamic Informants (Informan) State
-  const [informants, setInformants] = useState([
-    { id: 1, name: 'Rizki Ardhana', region: 'Jakarta Selatan', joined: 'Jan 2024', contributions: 58, verified: true, avatar: '/profil.jpg' },
-    { id: 2, name: 'Siti Aminah', region: 'Surabaya', joined: 'Feb 2024', contributions: 32, verified: true, avatar: '' },
-    { id: 3, name: 'Budi Santoso', region: 'Medan', joined: 'Mar 2024', contributions: 12, verified: false, avatar: '' },
-    { id: 4, name: 'Dewi Lestari', region: 'Bandung', joined: 'Apr 2024', contributions: 5, verified: false, avatar: '' },
-  ]);
+  const [informants, setInformants] = useState<any[]>([]);
 
   // 4. Dynamic Categories (Kategori) State
   const [categories, setCategories] = useState([
@@ -316,21 +324,47 @@ export function DashboardPage() {
   };
 
   // Informant Actions
-  const handleToggleVerifyInformant = (id: number) => {
-    setInformants(prev => prev.map(inf => {
-      if (inf.id === id) {
-        const nextStatus = !inf.verified;
-        triggerToast(nextStatus ? `${inf.name} telah diverifikasi!` : `Verifikasi ${inf.name} dibatalkan.`);
-        return { ...inf, verified: nextStatus };
+  const handleToggleVerifyInformant = async (email: string) => {
+    const informant = informants.find(i => i.email === email);
+    if (!informant) return;
+    const nextStatus = !informant.verified;
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verified: nextStatus })
+      });
+      if (res.ok) {
+        await fetchInformants();
+        triggerToast(nextStatus ? `${informant.name} telah diverifikasi!` : `Verifikasi ${informant.name} dibatalkan.`);
+      } else {
+        triggerToast('Gagal memperbarui status verifikasi.');
       }
-      return inf;
-    }));
+    } catch (err) {
+      console.error(err);
+      triggerToast('Gagal memperbarui status verifikasi.');
+    }
   };
 
-  const handleDeleteInformant = (id: number) => {
-    const inf = informants.find(i => i.id === id);
-    setInformants(prev => prev.filter(i => i.id !== id));
-    if (inf) triggerToast(`Informan ${inf.name} berhasil dihapus.`);
+  const handleDeleteInformant = async (email: string) => {
+    const informant = informants.find(i => i.email === email);
+    if (!informant) return;
+    if (window.confirm(`Apakah Anda yakin ingin menghapus informan ${informant.name}?`)) {
+      try {
+        const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          await fetchInformants();
+          triggerToast(`Informan ${informant.name} berhasil dihapus.`);
+        } else {
+          triggerToast('Gagal menghapus informan.');
+        }
+      } catch (err) {
+        console.error(err);
+        triggerToast('Gagal menghapus informan.');
+      }
+    }
   };
 
   // Category Actions
