@@ -201,8 +201,21 @@ export function DashboardPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
+      }
+    } catch (e) {
+      console.error("Gagal mengambil data kategori:", e);
+    }
+  };
+
   useEffect(() => {
     fetchSigns();
+    fetchCategories();
   }, []);
 
   const [signsFilter, setSignsFilter] = useState<'All' | 'Approved' | 'Pending' | 'Rejected'>('All');
@@ -321,7 +334,7 @@ export function DashboardPage() {
   };
 
   // Category Actions
-  const handleAddCategory = (e: React.FormEvent) => {
+  const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatName.trim()) return;
     const exists = categories.some(c => c.name.toLowerCase() === newCatName.trim().toLowerCase());
@@ -329,23 +342,50 @@ export function DashboardPage() {
       triggerToast('Kategori sudah terdaftar!');
       return;
     }
-    setCategories(prev => [
-      ...prev,
-      {
-        id: Date.now(),
-        name: newCatName.trim(),
-        count: 0,
-        description: newCatDesc.trim() || 'Tidak ada deskripsi.'
+    
+    const newCat = {
+      name: newCatName.trim(),
+      description: newCatDesc.trim() || 'Tidak ada deskripsi.'
+    };
+
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCat)
+      });
+      if (res.ok) {
+        await fetchCategories();
+        setNewCatName('');
+        setNewCatDesc('');
+        triggerToast('Kategori baru berhasil ditambahkan!');
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        triggerToast(errorData.error || 'Gagal menambahkan kategori.');
       }
-    ]);
-    setNewCatName('');
-    setNewCatDesc('');
-    triggerToast('Kategori baru berhasil ditambahkan!');
+    } catch (err) {
+      console.error(err);
+      triggerToast('Gagal menambahkan kategori.');
+    }
   };
 
-  const handleDeleteCategory = (id: number) => {
-    setCategories(prev => prev.filter(c => c.id !== id));
-    triggerToast('Kategori berhasil dihapus.');
+  const handleDeleteCategory = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
+      try {
+        const res = await fetch(`/api/categories/${id}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          await fetchCategories();
+          triggerToast('Kategori berhasil dihapus.');
+        } else {
+          triggerToast('Gagal menghapus kategori.');
+        }
+      } catch (err) {
+        console.error(err);
+        triggerToast('Gagal menghapus kategori.');
+      }
+    }
   };
 
   // Settings Actions

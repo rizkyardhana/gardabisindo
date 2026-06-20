@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Grid, List as ListIcon, Bookmark, Heart, ChevronDown, SlidersHorizontal, RotateCcw, Sparkles, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SignCard } from '@/src/components/SignCard';
-import { CATEGORIES, REGIONS } from '@/src/constants';
+import { REGIONS } from '@/src/constants';
 import type { Sign } from '@/src/types';
 import { cn } from '@/src/lib/utils';
 
@@ -35,6 +35,7 @@ export function DictionaryPage() {
   const [isListening, setIsListening] = useState(false);
 
   const [localSigns, setLocalSigns] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,6 +48,15 @@ export function DictionaryPage() {
       .catch(err => {
         console.error("Gagal memuat kosa isyarat dari server:", err);
         setIsLoading(false);
+      });
+
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        setCategories(data);
+      })
+      .catch(err => {
+        console.error("Gagal memuat kategori dari server:", err);
       });
   }, []);
 
@@ -215,7 +225,7 @@ export function DictionaryPage() {
                       onChange={(e) => setSelectedCategory(e.target.value)}
                     >
                       <option value="Semua">Semua Kategori</option>
-                      {CATEGORIES.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                      {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                     </select>
                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                   </div>

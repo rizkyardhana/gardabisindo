@@ -7,6 +7,7 @@ import { loadSigns, saveSigns } from "./src/lib/signsDb";
 import { loadUsers, saveUsers } from "./src/lib/usersDb";
 import { sendRecoveryEmail } from "./src/lib/email";
 import { put } from "@vercel/blob";
+import { loadCategories, saveCategories } from "./src/lib/categoriesDb";
 
 dotenv.config();
 
@@ -195,6 +196,61 @@ export async function createServer() {
     }
   });
   
+  // Categories endpoints
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categoriesDb = await loadCategories();
+      res.json(categoriesDb);
+    } catch (e: any) {
+      console.error("Gagal memuat kategori:", e);
+      res.status(500).json({ error: "Gagal memuat kategori dari database." });
+    }
+  });
+
+  app.post("/api/categories", async (req, res) => {
+    const { name, description } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: "Nama kategori wajib diisi." });
+    }
+    try {
+      const categoriesDb = await loadCategories();
+      const exists = categoriesDb.some(c => c.name.toLowerCase() === name.toLowerCase());
+      if (exists) {
+        return res.status(400).json({ error: "Kategori tersebut sudah terdaftar." });
+      }
+      
+      const newCategory = {
+        id: Date.now(),
+        name,
+        count: 0,
+        description: description || "Tidak ada deskripsi."
+      };
+      categoriesDb.push(newCategory);
+      await saveCategories(categoriesDb);
+      res.json({ success: true, category: newCategory });
+    } catch (e: any) {
+      console.error("Gagal menambahkan kategori:", e);
+      res.status(500).json({ error: "Gagal menyimpan kategori baru." });
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+      const categoriesDb = await loadCategories();
+      const index = categoriesDb.findIndex(c => String(c.id) === String(id));
+      if (index === -1) {
+        return res.status(404).json({ error: "Kategori tidak ditemukan." });
+      }
+      const deleted = categoriesDb.splice(index, 1);
+      await saveCategories(categoriesDb);
+      res.json({ success: true, deletedCategory: deleted[0] });
+    } catch (e: any) {
+      console.error("Gagal menghapus kategori:", e);
+      res.status(500).json({ error: "Gagal menghapus kategori." });
+    }
+  });
+
   // Signs and comments endpoints
   app.get("/api/signs", async (req, res) => {
     try {
