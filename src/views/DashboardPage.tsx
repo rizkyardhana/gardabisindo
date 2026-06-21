@@ -2,199 +2,26 @@ import { LayoutDashboard, Video, Users, MessageSquare, Plus, Bell, Search, Setti
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/src/lib/utils';
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-const TRANSLATIONS = {
-  id: {
-    // Sidebar
-    'Ikhtisar': 'Ikhtisar',
-    'Kelola Isyarat': 'Kelola Isyarat',
-    'Informan': 'Informan',
-    'Kategori': 'Kategori',
-    'Wilayah': 'Wilayah',
-    'Pengaturan': 'Pengaturan',
-    'Penyimpanan Arsip': 'Penyimpanan Arsip',
-    'Terpakai': 'Terpakai',
-    'Tambah Kapasitas': 'Tambah Kapasitas',
-    
-    // Overview/Ikhtisar
-    'Dashboard Pengelolaan': 'Dashboard Pengelolaan',
-    'Selamat datang kembali, Tim Dokumentasi & Kontributor GARDA.': 'Selamat datang kembali, Tim Dokumentasi & Kontributor GARDA.',
-    'Cari data...': 'Cari data...',
-    'Upload Kosa': 'Upload Kosa',
-    'Total Video': 'Total Video',
-    'Menunggu Persetujuan': 'Menunggu Persetujuan',
-    'Total Kontributor': 'Total Kontributor',
-    'Interaksi Kamus': 'Interaksi Kamus',
-    'Aktivitas Terkini': 'Aktivitas Terkini',
-    'Lihat Semua Aktivitas': 'Lihat Semua Aktivitas',
-    
-    // Table Headers
-    'Kosa Isyarat': 'Kosa Isyarat',
-    'Status': 'Status',
-    'Waktu': 'Waktu',
-    'Aksi': 'Aksi',
-    'Nama': 'Nama',
-    'Kontributor': 'Kontributor',
-    'Tanggal': 'Tanggal',
-    'Kontribusi': 'Kontribusi',
-    'Bergabung': 'Bergabung',
-
-    // Status Values
-    'Approved': 'Disetujui',
-    'Pending': 'Menunggu',
-    'Rejected': 'Ditolak',
-    'Disetujui': 'Disetujui',
-    'Menunggu': 'Menunggu',
-    'Ditolak': 'Ditolak',
-    'Semua': 'Semua',
-
-    // Manage Signs Tab
-    'Daftar Kosa Isyarat': 'Daftar Kosa Isyarat',
-    'Cari kosa kata, kontributor, wilayah...': 'Cari kosa kata, kontributor, wilayah...',
-    'Tidak ada kosa isyarat ditemukan.': 'Tidak ada kosa isyarat ditemukan.',
-
-    // Informants Tab
-    'Tambah Informan': 'Tambah Informan',
-    'Daftar Informan & Kontributor': 'Daftar Informan & Kontributor',
-    'Nama Lengkap': 'Nama Lengkap',
-    'Alamat Email': 'Alamat Email',
-    'Lokasi Wilayah': 'Lokasi Wilayah',
-    'Verifikasi': 'Verifikasi',
-    'Batal Verifikasi': 'Batal Verifikasi',
-    'Hapus': 'Hapus',
-    'Semua Kontributor': 'Semua Kontributor',
-
-    // Categories Tab
-    'Tambah Kategori': 'Tambah Kategori',
-    'Nama Kategori': 'Nama Kategori',
-    'Deskripsi Kategori': 'Deskripsi Kategori',
-    'Daftar Kategori': 'Daftar Kategori',
-    'Daftar Kosa Isyarat:': 'Daftar Kosa Isyarat:',
-    'Belum ada kosa isyarat': 'Belum ada kosa isyarat',
-
-    // Regions Tab
-    'Tambah Wilayah': 'Tambah Wilayah',
-    'Nama Wilayah': 'Nama Wilayah',
-    'Daftar Wilayah': 'Daftar Wilayah',
-
-    // Settings Tab
-    'Pengaturan Sistem': 'Pengaturan Sistem',
-    'Konfigurasi setelan global untuk platform Garda Bisindo.': 'Konfigurasi setelan global untuk platform Garda Bisindo.',
-    'Umum': 'Umum',
-    'Nama Platform': 'Nama Platform',
-    'Bahasa Sistem Utama': 'Bahasa Sistem Utama',
-    'Keamanan & Akses': 'Keamanan & Akses',
-    'Izinkan Upload Anonim / Tamu': 'Izinkan Upload Anonim / Tamu',
-    'Masyarakat dapat mengupload video kosa isyarat tanpa login.': 'Masyarakat dapat mengupload video kosa isyarat tanpa login.',
-    'Wajibkan Persetujuan Editor/Admin': 'Wajibkan Persetujuan Editor/Admin',
-    'Kosa isyarat yang baru diupload harus direview sebelum dipublish.': 'Kosa isyarat yang baru diupload harus direview sebelum dipublish.',
-    'Notifikasi': 'Notifikasi',
-    'Notifikasi Email': 'Notifikasi Email',
-    'Kirim notifikasi email ke admin jika ada upload isyarat baru.': 'Kirim notifikasi email ke admin jika ada upload isyarat baru.',
-    'Notifikasi Push': 'Notifikasi Push',
-    'Kirim notifikasi push ke perangkat editor/admin secara realtime.': 'Kirim notifikasi push ke perangkat editor/admin secara realtime.',
-    'Simpan Pengaturan': 'Simpan Pengaturan',
-  },
-  en: {
-    // Sidebar
-    'Ikhtisar': 'Overview',
-    'Kelola Isyarat': 'Manage Signs',
-    'Informan': 'Informants',
-    'Kategori': 'Category',
-    'Wilayah': 'Region',
-    'Pengaturan': 'Settings',
-    'Penyimpanan Arsip': 'Archive Storage',
-    'Terpakai': 'Used',
-    'Tambah Kapasitas': 'Upgrade Capacity',
-    
-    // Overview/Ikhtisar
-    'Dashboard Pengelolaan': 'Management Dashboard',
-    'Selamat datang kembali, Tim Dokumentasi & Kontributor GARDA.': 'Welcome back, GARDA Documentation Team & Contributors.',
-    'Cari data...': 'Search data...',
-    'Upload Kosa': 'Upload Sign',
-    'Total Video': 'Total Videos',
-    'Menunggu Persetujuan': 'Pending Approval',
-    'Total Kontributor': 'Total Contributors',
-    'Interaksi Kamus': 'Dictionary Interactions',
-    'Aktivitas Terkini': 'Recent Activity',
-    'Lihat Semua Aktivitas': 'View All Activities',
-    
-    // Table Headers
-    'Kosa Isyarat': 'Sign Word',
-    'Status': 'Status',
-    'Waktu': 'Time',
-    'Aksi': 'Action',
-    'Nama': 'Name',
-    'Kontributor': 'Contributor',
-    'Tanggal': 'Date',
-    'Kontribusi': 'Contributions',
-    'Bergabung': 'Joined',
-
-    // Status Values
-    'Approved': 'Approved',
-    'Pending': 'Pending',
-    'Rejected': 'Rejected',
-    'Disetujui': 'Approved',
-    'Menunggu': 'Pending',
-    'Ditolak': 'Rejected',
-    'Semua': 'All',
-
-    // Manage Signs Tab
-    'Daftar Kosa Isyarat': 'Signs List',
-    'Cari kosa kata, kontributor, wilayah...': 'Search sign words, contributors, regions...',
-    'Tidak ada kosa isyarat ditemukan.': 'No sign words found.',
-
-    // Informants Tab
-    'Tambah Informan': 'Add Informant',
-    'Daftar Informan & Kontributor': 'Informants & Contributors List',
-    'Nama Lengkap': 'Full Name',
-    'Alamat Email': 'Email Address',
-    'Lokasi Wilayah': 'Region Location',
-    'Verifikasi': 'Verify',
-    'Batal Verifikasi': 'Unverify',
-    'Hapus': 'Delete',
-    'Semua Kontributor': 'All Contributors',
-
-    // Categories Tab
-    'Tambah Kategori': 'Add Category',
-    'Nama Kategori': 'Category Name',
-    'Deskripsi Kategori': 'Category Description',
-    'Daftar Kategori': 'Categories List',
-    'Daftar Kosa Isyarat:': 'Signs List:',
-    'Belum ada kosa isyarat': 'No signs yet',
-
-    // Regions Tab
-    'Tambah Wilayah': 'Add Region',
-    'Nama Wilayah': 'Region Name',
-    'Daftar Wilayah': 'Regions List',
-
-    // Settings Tab
-    'Pengaturan Sistem': 'System Settings',
-    'Konfigurasi setelan global untuk platform Garda Bisindo.': 'Global configuration settings for the Garda Bisindo platform.',
-    'Umum': 'General',
-    'Nama Platform': 'Platform Name',
-    'Bahasa Sistem Utama': 'Primary System Language',
-    'Keamanan & Akses': 'Security & Access',
-    'Izinkan Upload Anonim / Tamu': 'Allow Anonymous / Guest Uploads',
-    'Masyarakat dapat mengupload video kosa isyarat tanpa login.': 'Allow the public to upload sign videos without logging in.',
-    'Wajibkan Persetujuan Editor/Admin': 'Require Editor/Admin Approval',
-    'Kosa isyarat yang baru diupload harus direview sebelum dipublish.': 'Newly uploaded sign words must be reviewed before publication.',
-    'Notifikasi': 'Notifications',
-    'Notifikasi Email': 'Email Notifications',
-    'Kirim notifikasi email ke admin jika ada upload isyarat baru.': 'Send email notifications to admins when a new sign is uploaded.',
-    'Notifikasi Push': 'Push Notifications',
-    'Kirim notifikasi push ke perangkat editor/admin secara realtime.': 'Send push notifications to editor/admin devices in real time.',
-    'Simpan Pengaturan': 'Save Settings',
-  }
-};
+import { useLanguage } from '../contexts/LanguageContext';
 
 export function DashboardPage() {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState(() => {
+    let defaultLang = 'id';
     try {
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('system_settings');
         if (saved) {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          if (!parsed.systemLanguage) {
+            const browserLang = navigator.language || (navigator as any).userLanguage;
+            parsed.systemLanguage = (browserLang && browserLang.toLowerCase().startsWith('en')) ? 'en' : 'id';
+          }
+          return parsed;
+        }
+        const browserLang = navigator.language || (navigator as any).userLanguage;
+        if (browserLang && browserLang.toLowerCase().startsWith('en')) {
+          defaultLang = 'en';
         }
       }
     } catch (e) {
@@ -202,18 +29,13 @@ export function DashboardPage() {
     }
     return {
       siteName: 'GARDA BISINDO',
-      systemLanguage: 'id',
+      systemLanguage: defaultLang,
       allowGuestUploads: false,
       requireApproval: true,
       emailNotifications: true,
       pushNotifications: false,
     };
   });
-
-  const t = (key: keyof typeof TRANSLATIONS['id']) => {
-    const lang = settings.systemLanguage === 'en' ? 'en' : 'id';
-    return TRANSLATIONS[lang][key] || key;
-  };
 
   const [userName, setUserName] = useState('Rizki Ardhana');
   const userRole = typeof window !== 'undefined' ? (localStorage.getItem('auth_role') || 'informant') : 'informant';
@@ -230,6 +52,21 @@ export function DashboardPage() {
     } catch (e) {
       console.error(e);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        const saved = localStorage.getItem('system_settings');
+        if (saved) {
+          setSettings(JSON.parse(saved));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    window.addEventListener('systemSettingsUpdate', handleUpdate);
+    return () => window.removeEventListener('systemSettingsUpdate', handleUpdate);
   }, []);
 
   // Navigation tabs in Indonesian

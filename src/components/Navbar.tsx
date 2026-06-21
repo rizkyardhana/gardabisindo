@@ -1,38 +1,16 @@
-import { Menu, X, Book, Home, LayoutDashboard, User, Heart } from 'lucide-react';
+import { Menu, X, Book, Home, LayoutDashboard, User, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/src/lib/utils';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { pathname } = useLocation();
-  const [lang, setLang] = useState('id');
-
-  useEffect(() => {
-    const checkLang = () => {
-      try {
-        const saved = localStorage.getItem('system_settings');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed.systemLanguage) {
-            setLang(parsed.systemLanguage);
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    checkLang();
-    window.addEventListener('systemSettingsUpdate', checkLang);
-    window.addEventListener('storage', checkLang);
-    return () => {
-      window.removeEventListener('systemSettingsUpdate', checkLang);
-      window.removeEventListener('storage', checkLang);
-    };
-  }, []);
+  const { t, lang, setLang } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,16 +24,11 @@ export function Navbar() {
     setIsAuthenticated(!!localStorage.getItem('auth_token'));
   }, [pathname]);
 
-  const navLinks = lang === 'en' ? [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'Dictionary', path: '/dictionary', icon: Book },
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Profile', path: '/profile', icon: User },
-  ] : [
-    { name: 'Beranda', path: '/', icon: Home },
-    { name: 'Kamus', path: '/dictionary', icon: Book },
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Profil', path: '/profile', icon: User },
+  const navLinks = [
+    { name: t('Beranda'), path: '/', icon: Home },
+    { name: t('Kamus'), path: '/dictionary', icon: Book },
+    { name: t('Dashboard'), path: '/dashboard', icon: LayoutDashboard },
+    { name: t('Profil'), path: '/profile', icon: User },
   ];
 
   return (
@@ -79,7 +52,7 @@ export function Navbar() {
               GARDA <span className="text-garda-red">BISINDO</span>
             </span>
             <span className="text-[10px] uppercase tracking-widest font-medium opacity-60">
-              {lang === 'en' ? 'Archive & Documentation' : 'Arsip & Dokumentasi'}
+              {t('Arsip & Dokumentasi')}
             </span>
           </div>
         </Link>
@@ -104,12 +77,22 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Language Switcher */}
+          <button
+            onClick={() => setLang(lang === 'id' ? 'en' : 'id')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition-all cursor-pointer shadow-sm"
+            title={lang === 'id' ? 'Switch to English' : 'Ubah ke Bahasa Indonesia'}
+          >
+            <Globe className="w-3.5 h-3.5 text-slate-500" />
+            <span className="uppercase">{lang}</span>
+          </button>
+
           {!isAuthenticated ? (
             <Link
               to="/login"
               className="hidden sm:flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white text-garda-red border border-slate-200 hover:bg-red-50 transition-all"
             >
-              {lang === 'en' ? 'Login' : 'Masuk'}
+              {t('Masuk')}
             </Link>
           ) : (
             <button
@@ -122,7 +105,7 @@ export function Navbar() {
               }}
               className="hidden sm:flex items-center px-4 py-2 text-sm font-medium bg-white text-garda-red border border-slate-200 hover:bg-red-50 transition-all cursor-pointer"
             >
-              {lang === 'en' ? 'Logout' : 'Keluar'}
+              {t('Keluar')}
             </button>
           )}
 
@@ -163,13 +146,24 @@ export function Navbar() {
               ))}
               <hr className="my-2 border-slate-100" />
 
+              <button
+                type="button"
+                onClick={() => {
+                  setLang(lang === 'id' ? 'en' : 'id');
+                }}
+                className="flex items-center justify-center gap-2 w-full py-4 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl font-bold transition-all cursor-pointer"
+              >
+                <Globe className="w-5 h-5 text-slate-500" />
+                <span>{lang === 'id' ? 'Bahasa: Indonesia (Ubah)' : 'Language: English (Change)'}</span>
+              </button>
+
               {!isAuthenticated ? (
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 w-full py-4 bg-white border border-slate-200 text-garda-red rounded-xl font-bold hover:bg-red-50 transition-all"
                 >
-                  {lang === 'en' ? 'Login' : 'Masuk'}
+                  {t('Masuk')}
                 </Link>
               ) : (
                 <button
@@ -183,7 +177,7 @@ export function Navbar() {
                   }}
                   className="flex items-center justify-center gap-2 w-full py-4 bg-white border border-slate-200 text-garda-red rounded-xl font-bold hover:bg-red-50 transition-all cursor-pointer"
                 >
-                  {lang === 'en' ? 'Logout' : 'Keluar'}
+                  {t('Keluar')}
                 </button>
               )}
 
@@ -192,7 +186,7 @@ export function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center justify-center gap-2 w-full py-4 bg-garda-red text-white rounded-xl font-bold mt-2"
               >
-                {lang === 'en' ? 'Explore Dictionary' : 'Jelajahi Kamus'}
+                {t('Explore Dictionary')}
               </Link>
             </div>
           </motion.div>

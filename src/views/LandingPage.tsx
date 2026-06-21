@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Search, Play, ArrowRight, ShieldCheck, Video, MapPin, Users, BookOpen, Sparkles, Compass, HelpCircle, Check, X, Award, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SignCard } from '@/src/components/SignCard';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const partners = [
   { name: 'DPP Gerkatin Pusat', logo: '/logo dpp gerkatin pusat.jpeg' },
@@ -155,7 +156,25 @@ const REGION_THEMES: Record<string, { text: string; bg: string; border: string; 
 };
 
 export function LandingPage() {
-  const [selectedRegion, setSelectedRegion] = useState(REGIONAL_INFO[1]);
+  const { t } = useLanguage();
+
+  const localizedQuizQuestions = QUIZ_QUESTIONS.map(q => ({
+    ...q,
+    word: t(q.word),
+    options: q.options.map(o => t(o)),
+    correctAnswer: t(q.correctAnswer),
+    explanation: t(q.explanation)
+  }));
+
+  const localizedRegionalInfo = REGIONAL_INFO.map(reg => ({
+    ...reg,
+    name: t(reg.name),
+    description: t(reg.description),
+    featuredWord: t(reg.featuredWord)
+  }));
+
+  const [selectedRegionId, setSelectedRegionId] = useState('jawa');
+  const selectedRegion = localizedRegionalInfo.find(r => r.id === selectedRegionId) || localizedRegionalInfo[1];
 
   // Quiz states
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
@@ -167,7 +186,7 @@ export function LandingPage() {
   const handleAnswerSubmit = (option: string) => {
     if (selectedAnswer) return;
     setSelectedAnswer(option);
-    const currentQuestion = QUIZ_QUESTIONS[currentQuizIndex];
+    const currentQuestion = localizedQuizQuestions[currentQuizIndex];
     if (option === currentQuestion.correctAnswer) {
       setQuizScore(prev => prev + 1);
     }
@@ -177,7 +196,7 @@ export function LandingPage() {
   const handleNextQuiz = () => {
     setSelectedAnswer(null);
     setShowExplanation(false);
-    if (currentQuizIndex < QUIZ_QUESTIONS.length - 1) {
+    if (currentQuizIndex < localizedQuizQuestions.length - 1) {
       setCurrentQuizIndex(prev => prev + 1);
     } else {
       setQuizFinished(true);
@@ -192,10 +211,10 @@ export function LandingPage() {
     setShowExplanation(false);
   };
   const stats = [
-    { label: 'Kosa Isyarat', value: '2,500+', icon: BookOpen },
-    { label: 'Kontributor Tuli', value: '150+', icon: Users },
-    { label: 'Provinsi Terarsip', value: '38', icon: MapPin },
-    { label: 'Video Dokumentasi', value: '1,200', icon: Video },
+    { label: t('Kosa Isyarat'), value: '2,500+', icon: BookOpen },
+    { label: t('Kontributor Tuli'), value: '150+', icon: Users },
+    { label: t('Provinsi Terarsip'), value: '38', icon: MapPin },
+    { label: t('Video Dokumentasi'), value: '1,200', icon: Video },
   ];
 
   const sampleSigns = [
@@ -240,6 +259,14 @@ export function LandingPage() {
     }
   ];
 
+  const localizedSampleSigns = sampleSigns.map(sign => ({
+    ...sign,
+    word: t(sign.word),
+    category: t(sign.category),
+    region: t(sign.region),
+    description: t(sign.description)
+  }));
+
   return (
     <div className="pt-20 overflow-hidden">
       {/* Hero Section */}
@@ -263,7 +290,7 @@ export function LandingPage() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-garda-red/10 border border-garda-red/20 rounded-full mb-6">
               <span className="w-2 h-2 bg-garda-red rounded-full animate-pulse" />
-              <span className="text-garda-red text-xs font-bold uppercase tracking-widest leading-none">Preserving Culture through Tech</span>
+              <span className="text-garda-red text-xs font-bold uppercase tracking-widest leading-none">{t('Preserving Culture through Tech')}</span>
             </div>
 
             <h1 className="text-5xl md:text-7xl lg:text-8xl text-white mb-6 leading-[0.9] tracking-tight">
@@ -272,17 +299,17 @@ export function LandingPage() {
             </h1>
 
             <p className="text-slate-400 text-lg md:text-xl max-w-xl mb-10 leading-relaxed">
-              Gerakan Arsip & Dokumentasi Digital Bahasa Isyarat Indonesia (BISINDO). Melindungi warisan komunikasi komunitas Tuli Indonesia untuk generasi mendatang.
+              {t('Gerakan Arsip & Dokumentasi Digital Bahasa Isyarat Indonesia (BISINDO). Melindungi warisan komunikasi komunitas Tuli Indonesia untuk generasi mendatang.')}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/dictionary" className="px-8 py-4 bg-garda-red text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-all shadow-xl shadow-red-900/40 group">
-                Jelajahi Kamus
+                {t('Jelajahi Kamus')}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <button className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-2xl font-bold hover:bg-white/20 transition-all flex items-center justify-center gap-2">
                 <Play className="w-5 h-5 fill-white" />
-                Tonton Dokumenter
+                {t('Tonton Dokumenter')}
               </button>
             </div>
 
@@ -293,7 +320,7 @@ export function LandingPage() {
                 ))}
               </div>
               <p className="text-slate-500 text-sm">
-                Bergabung bersama <span className="text-white font-bold">500+</span> relawan komunitas
+                {t('Bergabung bersama')} <span className="text-white font-bold">500+</span> {t('relawan komunitas')}
               </p>
             </div>
           </motion.div>
@@ -315,7 +342,7 @@ export function LandingPage() {
                 <div className="absolute bottom-6 left-6 right-6 p-4 glass-dark rounded-2xl">
                   <p className="text-white font-medium text-sm flex items-center gap-2">
                     <ShieldCheck className="text-garda-cyan w-4 h-4" />
-                    Arsip Terverifikasi oleh Gerkatin
+                    {t('Arsip Terverifikasi oleh Gerkatin')}
                   </p>
                 </div>
               </div>
@@ -333,8 +360,8 @@ export function LandingPage() {
                 <div className="h-1 bg-slate-100 rounded-full mb-3">
                   <div className="h-full w-2/3 bg-garda-red rounded-full" />
                 </div>
-                <p className="text-xs font-bold">12 Kosa Isyarat Baru</p>
-                <p className="text-[10px] text-slate-400">Region: Papua Barat</p>
+                <p className="text-xs font-bold">{t('12 Kosa Isyarat Baru')}</p>
+                <p className="text-[10px] text-slate-400">{lang === 'en' ? 'Region' : 'Wilayah'}: {t('Maluku & Papua')}</p>
               </motion.div>
             </div>
           </motion.div>
@@ -370,17 +397,17 @@ export function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
             <div>
-              <p className="text-garda-red font-bold text-xs uppercase tracking-[0.3em] mb-4">Mulai Belajar</p>
-              <h2 className="text-4xl md:text-5xl">Arsip Kosa Isyarat Pilihan</h2>
+              <p className="text-garda-red font-bold text-xs uppercase tracking-[0.3em] mb-4">{t('Mulai Belajar')}</p>
+              <h2 className="text-4xl md:text-5xl">{t('Arsip Kosa Isyarat Pilihan')}</h2>
             </div>
             <Link to="/dictionary" className="text-garda-red font-bold flex items-center gap-2 hover:gap-3 transition-all">
-              Semua Kosa Isyarat
+              {t('Semua Kosa Isyarat')}
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sampleSigns.map((sign) => (
+            {localizedSampleSigns.map((sign) => (
               <SignCard key={sign.id} sign={sign} />
             ))}
           </div>
@@ -400,37 +427,37 @@ export function LandingPage() {
               />
             </div>
             <div className="absolute -bottom-10 -right-10 p-8 glass rounded-[2.5rem] shadow-2xl max-w-sm hidden md:block">
-              <h4 className="text-xl font-bold mb-4">Visi Kami</h4>
+              <h4 className="text-xl font-bold mb-4">{t('Visi Kami')}</h4>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Memastikan tidak ada variasi kosa isyarat daerah yang hilang dari sejarah budaya Indonesia melalui dokumentasi berbasis data dan AI.
+                {t('Memastikan tidak ada variasi kosa isyarat daerah yang hilang dari sejarah budaya Indonesia melalui dokumentasi berbasis data and AI.')}
               </p>
             </div>
           </div>
 
           <div>
-            <h2 className="text-5xl mb-8">Mengapa GARDA BISINDO hadir?</h2>
+            <h2 className="text-5xl mb-8">{t('Mengapa GARDA BISINDO hadir?')}</h2>
             <div className="space-y-8">
               <p className="text-slate-600 text-lg leading-relaxed">
-                Bahasa Isyarat Indonesia (BISINDO) merupakan bagian penting dari identitas dan budaya komunitas Tuli Indonesia. Namun saat ini, banyak kosa isyarat daerah mulai hilang karena minimnya dokumentasi dan arsip digital yang tersedia.
+                {t('Bahasa Isyarat Indonesia (BISINDO) merupakan bagian penting dari identitas dan budaya komunitas Tuli Indonesia. Namun saat ini, banyak kosa isyarat daerah mulai hilang karena minimnya dokumentasi dan arsip digital yang tersedia.')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
                   <div className="w-10 h-10 bg-garda-cyan/10 rounded-xl flex items-center justify-center mb-4">
                     <ShieldCheck className="text-garda-cyan w-6 h-6" />
                   </div>
-                  <h4 className="font-bold mb-2">Perlindungan Budaya</h4>
-                  <p className="text-xs text-slate-500">Menjaga identitas komunitas Tuli Indonesia agar tetap hidup.</p>
+                  <h4 className="font-bold mb-2">{t('Perlindungan Budaya')}</h4>
+                  <p className="text-xs text-slate-500">{t('Menjaga identitas komunitas Tuli Indonesia agar tetap hidup.')}</p>
                 </div>
                 <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
                   <div className="w-10 h-10 bg-garda-red/10 rounded-xl flex items-center justify-center mb-4">
                     <Users className="text-garda-red w-6 h-6" />
                   </div>
-                  <h4 className="font-bold mb-2">Edukasi Publik</h4>
-                  <p className="text-xs text-slate-500">Memberikan akses belajar inklusif bagi masyarakat luas.</p>
+                  <h4 className="font-bold mb-2">{t('Edukasi Publik')}</h4>
+                  <p className="text-xs text-slate-500">{t('Memberikan akses belajar inklusif bagi masyarakat luas.')}</p>
                 </div>
               </div>
               <button className="px-10 py-5 bg-garda-navy text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-navy-100">
-                Pahami Lebih Lanjut
+                {t('Pahami Lebih Lanjut')}
               </button>
             </div>
           </div>
@@ -443,13 +470,13 @@ export function LandingPage() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-50 border border-cyan-150 rounded-full mb-4">
               <Compass className="w-4 h-4 text-cyan-600 animate-spin" style={{ animationDuration: '6s' }} />
-              <span className="text-cyan-700 text-xs font-bold uppercase tracking-widest leading-none">Jelajahi Daerah</span>
+              <span className="text-cyan-700 text-xs font-bold uppercase tracking-widest leading-none">{t('Jelajahi Daerah')}</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-4">
-              Eksplorasi Dialek Nusantara
+              {t('Eksplorasi Dialek Nusantara')}
             </h2>
             <p className="text-slate-500 font-medium text-sm">
-              Bahasa Isyarat memiliki dialek khas di tiap daerah. Klik daerah di peta grafis atau tombol list untuk melihat detailnya.
+              {t('Bahasa Isyarat memiliki dialek khas di tiap daerah. Klik daerah di peta grafis atau tombol list untuk melihat detailnya.')}
             </p>
           </div>
 
@@ -461,7 +488,7 @@ export function LandingPage() {
               <div className="relative w-full aspect-[2.2/1] rounded-3xl overflow-hidden border border-slate-200/80 shadow-inner bg-gradient-to-b from-sky-100 to-sky-50">
                 <img
                   src="/peta pulau indonesia.jpg"
-                  alt="Peta Kepulauan Indonesia"
+                  alt={t('Peta Kepulauan Indonesia')}
                   className="w-full h-full object-cover mix-blend-multiply opacity-90 contrast-105"
                 />
 
@@ -474,14 +501,14 @@ export function LandingPage() {
                   { id: 'bali-nusa', name: 'Bali & Nusa Tenggara', top: '80%', left: '55%' },
                   { id: 'papua', name: 'Maluku & Papua', top: '56%', left: '85%' }
                 ].map((pos) => {
-                  const isActive = selectedRegion.id === pos.id;
-                  const regionObj = REGIONAL_INFO.find(r => r.id === pos.id);
+                  const isActive = selectedRegionId === pos.id;
+                  const regionObj = localizedRegionalInfo.find(r => r.id === pos.id);
                   const theme = REGION_THEMES[pos.id] || REGION_THEMES['jawa'];
                   return (
                     <button
                       key={pos.id}
                       type="button"
-                      onClick={() => regionObj && setSelectedRegion(regionObj)}
+                      onClick={() => regionObj && setSelectedRegionId(regionObj.id)}
                       style={{ top: pos.top, left: pos.left }}
                       className="absolute -translate-x-1/2 -translate-y-1/2 group/pin cursor-pointer z-10 p-1"
                     >
@@ -492,7 +519,7 @@ export function LandingPage() {
 
                       {/* Tooltip Label */}
                       <span className={`absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1 text-[10px] font-bold text-white rounded-lg opacity-0 group-hover/pin:opacity-100 transition-all duration-250 transform translate-y-1 group-hover/pin:translate-y-0 whitespace-nowrap shadow-md pointer-events-none flex flex-col items-center ${isActive ? 'opacity-100 bg-garda-red translate-y-0' : 'bg-slate-900/90 backdrop-blur-sm'}`}>
-                        {pos.name}
+                        {t(pos.name)}
                         {/* Caret pointing down */}
                         <span className={`absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent ${isActive ? 'border-t-garda-red' : 'border-t-slate-900/90'}`} />
                       </span>
@@ -507,17 +534,17 @@ export function LandingPage() {
               {/* Region Selector Pills (Col span 4) */}
               <div className="lg:col-span-4 space-y-4">
                 <span className="text-[10px] font-bold tracking-widest text-slate-400 block uppercase">
-                  Pilih Wilayah
+                  {t('Pilih Wilayah')}
                 </span>
                 <div className="flex flex-wrap lg:flex-col gap-2.5">
-                  {REGIONAL_INFO.map((reg) => {
-                    const isActive = selectedRegion.id === reg.id;
+                  {localizedRegionalInfo.map((reg) => {
+                    const isActive = selectedRegionId === reg.id;
                     const regTheme = REGION_THEMES[reg.id] || REGION_THEMES['jawa'];
                     return (
                       <button
                         key={reg.id}
                         type="button"
-                        onClick={() => setSelectedRegion(reg)}
+                        onClick={() => setSelectedRegionId(reg.id)}
                         className={`w-full lg:text-left px-5 py-3.5 rounded-2xl text-xs font-bold transition-all border flex items-center justify-between cursor-pointer ${isActive
                           ? 'bg-slate-900 text-white border-slate-950 shadow-md translate-x-1'
                           : 'bg-white text-slate-650 border-slate-200 hover:bg-slate-50'
@@ -528,7 +555,7 @@ export function LandingPage() {
                           <span>{reg.name}</span>
                         </div>
                         <span className={`px-2 py-0.5 rounded-full text-[9px] ${isActive ? 'bg-garda-red text-white' : 'bg-slate-100 text-slate-500'}`}>
-                          {reg.archivedCount} Isyarat
+                          {reg.archivedCount} {t('Isyarat')}
                         </span>
                       </button>
                     );
@@ -551,17 +578,17 @@ export function LandingPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <span className={`text-[10px] font-bold tracking-widest px-3 py-1 rounded-full uppercase border ${(REGION_THEMES[selectedRegion.id] || REGION_THEMES['jawa']).badge}`}>
-                        Wilayah Terpilih
+                        {t('Wilayah Terpilih')}
                       </span>
                       <h3 className="text-3xl font-display font-bold text-slate-900 mt-3">{selectedRegion.name}</h3>
-                      <p className="text-slate-500 text-xs mt-1">Pusat Penelitian: <span className="font-semibold text-slate-700">{selectedRegion.regionName}</span></p>
+                      <p className="text-slate-500 text-xs mt-1">{t('Pusat Penelitian:')} <span className="font-semibold text-slate-700">{selectedRegion.regionName}</span></p>
                     </div>
 
                     <Link
                       to={`/dictionary?region=${selectedRegion.name}`}
                       className="hidden sm:flex px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-xs transition-all items-center gap-2 group shadow-lg shadow-slate-900/10 cursor-pointer"
                     >
-                      Buka Kamus {selectedRegion.name}
+                      {t('Buka Kamus')} {selectedRegion.name}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
@@ -572,11 +599,11 @@ export function LandingPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white border border-slate-200/65 p-4 rounded-2xl">
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Arsip Video</span>
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">{t('Arsip Video')}</span>
                       <span className="text-2xl font-bold text-slate-800">{selectedRegion.archivedCount}</span>
                     </div>
                     <div className="bg-white border border-slate-200/65 p-4 rounded-2xl">
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Kosa Kata Unggulan</span>
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">{t('Kosa Kata Unggulan')}</span>
                       <span className={`text-sm font-bold block truncate mt-1 ${(REGION_THEMES[selectedRegion.id] || REGION_THEMES['jawa']).text}`}>{selectedRegion.featuredWord}</span>
                     </div>
                   </div>
@@ -586,7 +613,7 @@ export function LandingPage() {
                       to={`/dictionary?region=${selectedRegion.name}`}
                       className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-2 group shadow-lg shadow-slate-900/10 cursor-pointer"
                     >
-                      Buka Kamus {selectedRegion.name}
+                      {t('Buka Kamus')} {selectedRegion.name}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
@@ -603,13 +630,13 @@ export function LandingPage() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 border border-red-150 rounded-full mb-4">
               <Sparkles className="w-4 h-4 text-garda-red animate-pulse" />
-              <span className="text-garda-red text-xs font-bold uppercase tracking-widest leading-none">Tebak BISINDO</span>
+              <span className="text-garda-red text-xs font-bold uppercase tracking-widest leading-none">{t('Tebak BISINDO')}</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-4">
-              Kuis Isyarat Interaktif
+              {t('Kuis Isyarat Interaktif')}
             </h2>
             <p className="text-slate-500 font-medium text-sm">
-              Uji kemampuan visual bahasa isyarat Anda sekarang juga. Menangkan skor tertinggi!
+              {t('Uji kemampuan visual bahasa isyarat Anda sekarang juga. Menangkan skor tertinggi!')}
             </p>
           </div>
 
@@ -617,7 +644,7 @@ export function LandingPage() {
             <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
               <div
                 className="h-full bg-garda-red transition-all duration-500"
-                style={{ width: `${((currentQuizIndex + (quizFinished ? 1 : 0)) / QUIZ_QUESTIONS.length) * 100}%` }}
+                style={{ width: `${((currentQuizIndex + (quizFinished ? 1 : 0)) / localizedQuizQuestions.length) * 100}%` }}
               />
             </div>
 
@@ -625,17 +652,17 @@ export function LandingPage() {
               <div className="space-y-8">
                 {/* Header info */}
                 <div className="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-widest">
-                  <span>Soal {currentQuizIndex + 1} dari {QUIZ_QUESTIONS.length}</span>
-                  <span className="text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">Skor: {quizScore}</span>
+                  <span>{t('Soal')} {currentQuizIndex + 1} {t('dari')} {localizedQuizQuestions.length}</span>
+                  <span className="text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">{t('Skor:')} {quizScore}</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                   {/* Left: Video Container */}
                   <div className="aspect-[4/3] rounded-3xl overflow-hidden bg-slate-950 border border-slate-250 relative group shadow-sm flex items-center justify-center">
                     <video
-                      key={QUIZ_QUESTIONS[currentQuizIndex].videoUrl}
+                      key={localizedQuizQuestions[currentQuizIndex].videoUrl}
                       className="w-full h-full object-cover"
-                      src={QUIZ_QUESTIONS[currentQuizIndex].videoUrl}
+                      src={localizedQuizQuestions[currentQuizIndex].videoUrl}
                       autoPlay
                       loop
                       muted
@@ -643,18 +670,18 @@ export function LandingPage() {
                     />
                     <div className="absolute bottom-4 left-4 bg-slate-950/70 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-white text-[10px] font-bold">
                       <Video className="w-3.5 h-3.5 text-garda-red animate-pulse" />
-                      MEMUTAR ISYARAT
+                      {t('MEMUTAR ISYARAT')}
                     </div>
                   </div>
 
                   {/* Right: Answer Choices */}
                   <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">Tebak arti gerakan isyarat di samping:</h3>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">{t('Tebak arti gerakan isyarat di samping:')}</h3>
 
                     <div className="space-y-3">
-                      {QUIZ_QUESTIONS[currentQuizIndex].options.map((option) => {
+                      {localizedQuizQuestions[currentQuizIndex].options.map((option) => {
                         const isSelected = selectedAnswer === option;
-                        const isCorrect = option === QUIZ_QUESTIONS[currentQuizIndex].correctAnswer;
+                        const isCorrect = option === localizedQuizQuestions[currentQuizIndex].correctAnswer;
                         const hasAnswered = selectedAnswer !== null;
 
                         let buttonStyles = "border-slate-200 hover:bg-slate-50 hover:border-slate-300";
@@ -694,17 +721,17 @@ export function LandingPage() {
                   >
                     <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-400 tracking-wider">
                       <HelpCircle className="w-4 h-4 text-garda-red" />
-                      Penjelasan Gerakan
+                      {t('Penjelasan Gerakan')}
                     </div>
                     <p className="text-sm text-slate-650 leading-relaxed font-medium">
-                      {QUIZ_QUESTIONS[currentQuizIndex].explanation}
+                      {localizedQuizQuestions[currentQuizIndex].explanation}
                     </p>
                     <div className="pt-2 flex justify-end">
                       <button
                         onClick={handleNextQuiz}
                         className="px-6 py-3 bg-garda-red hover:bg-red-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-red-100"
                       >
-                        {currentQuizIndex < QUIZ_QUESTIONS.length - 1 ? 'Soal Selanjutnya' : 'Lihat Hasil Akhir'}
+                        {currentQuizIndex < localizedQuizQuestions.length - 1 ? t('Soal Selanjutnya') : t('Lihat Hasil Akhir')}
                         <ArrowRight className="w-4 h-4" />
                       </button>
                     </div>
@@ -722,16 +749,16 @@ export function LandingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-3xl font-display font-bold text-slate-900">Kuis Selesai!</h3>
+                  <h3 className="text-3xl font-display font-bold text-slate-900">{t('Kuis Selesai!')}</h3>
                   <p className="text-slate-500 font-medium">
-                    Skor akhir Anda adalah: <span className="text-garda-red font-bold text-lg">{quizScore} / {QUIZ_QUESTIONS.length}</span>
+                    {t('Skor akhir Anda adalah:')} <span className="text-garda-red font-bold text-lg">{quizScore} / {localizedQuizQuestions.length}</span>
                   </p>
                 </div>
 
                 <p className="text-sm text-slate-650 font-medium">
-                  {quizScore === QUIZ_QUESTIONS.length
-                    ? 'Luar biasa! Anda memahami bahasa isyarat BISINDO dengan sangat baik.'
-                    : 'Pekerjaan yang bagus! Ayo coba lagi untuk menyempurnakan pemahaman Anda.'}
+                  {quizScore === localizedQuizQuestions.length
+                    ? t('Luar biasa! Anda memahami bahasa isyarat BISINDO dengan sangat baik.')
+                    : t('Pekerjaan yang bagus! Ayo coba lagi untuk menyempurnakan pemahaman Anda.')}
                 </p>
 
                 <div className="flex gap-4 pt-4">
@@ -739,13 +766,13 @@ export function LandingPage() {
                     onClick={resetQuiz}
                     className="flex-1 py-4 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <RotateCcw className="w-4 h-4" /> Ulangi Kuis
+                    <RotateCcw className="w-4 h-4" /> {t('Ulangi Kuis')}
                   </button>
                   <Link
                     to="/dictionary"
                     className="flex-1 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 cursor-pointer"
                   >
-                    Belajar Lagi
+                    {t('Belajar Lagi')}
                   </Link>
                 </div>
               </motion.div>
@@ -757,7 +784,7 @@ export function LandingPage() {
       {/* Partners Section */}
       <section className="py-20 bg-slate-50 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-12">Bekerja Sama Dengan</p>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-12">{t('Bekerja Sama Dengan')}</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 items-stretch justify-center">
             {partners.map((partner, index) => (
               <motion.div
@@ -784,16 +811,16 @@ export function LandingPage() {
       <section className="py-24 px-6 relative overflow-hidden">
         <div className="max-w-6xl mx-auto p-12 lg:p-20 bg-garda-navy rounded-[3rem] text-center text-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-garda-red/10 animate-pulse pointer-events-none" />
-          <h2 className="text-4xl md:text-6xl mb-8 relative z-10">Mulai Dokumentasi Sekarang</h2>
+          <h2 className="text-4xl md:text-6xl mb-8 relative z-10">{t('Mulai Dokumentasi Sekarang')}</h2>
           <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 relative z-10">
-            Jadilah bagian dari gerakan pelestarian budaya. Bantu kami mendokumentasikan kosa isyarat di daerahmu.
+            {t('Jadilah bagian dari gerakan pelestarian budaya. Bantu kami mendokumentasikan kosa isyarat di daerahmu.')}
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
             <button className="px-10 py-5 bg-garda-red text-white rounded-2xl font-bold text-lg hover:scale-105 transition-transform shadow-2xl shadow-red-500/40">
-              Daftar Jadi Informan
+              {t('Daftar Jadi Informan')}
             </button>
             <button className="px-10 py-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl font-bold text-lg hover:bg-white/20 transition-all">
-              Donasi Campaign
+              {t('Donasi Campaign')}
             </button>
           </div>
         </div>
