@@ -156,7 +156,7 @@ const REGION_THEMES: Record<string, { text: string; bg: string; border: string; 
 };
 
 export function LandingPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const localizedQuizQuestions = QUIZ_QUESTIONS.map(q => ({
     ...q,
