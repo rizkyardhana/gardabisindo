@@ -13,6 +13,7 @@ import { DashboardPage } from './views/DashboardPage';
 import { ProfilePage } from './views/ProfilePage';
 import { LoginPage } from './views/LoginPage';
 import { RequireAuth, RequireRole } from './routes/RequireAuth';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 export default function App() {
   useEffect(() => {
@@ -94,19 +95,21 @@ export default function App() {
     updateFavicon();
   }, []);
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<LandingPage />} />
-          <Route path="dictionary" element={<DictionaryPage />} />
-          <Route path="sign/:id" element={<DetailSignPage />} />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="dashboard" element={<RequireRole roles={['admin', 'informant']}><DashboardPage /></RequireRole>} />
-          <Route path="profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
-          <Route path="profile/:id" element={<RequireAuth><ProfilePage /></RequireAuth>} />
-        </Route>
-      </Routes>
-    </Router>
+    <LanguageProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<LandingPage />} />
+            <Route path="dictionary" element={<DictionaryPage />} />
+            <Route path="sign/:id" element={<DetailSignPage />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="dashboard" element={<RequireRole roles={['admin', 'informant']}><DashboardPage /></RequireRole>} />
+            <Route path="profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+            <Route path="profile/:id" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+          </Route>
+        </Routes>
+      </Router>
+    </LanguageProvider>
   );
 }
 

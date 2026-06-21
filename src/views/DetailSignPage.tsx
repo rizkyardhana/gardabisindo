@@ -4,9 +4,11 @@ import { motion } from 'motion/react';
 import { SignCard } from '@/src/components/SignCard';
 import { useState, useEffect } from 'react';
 import type { Sign } from '@/src/types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export function DetailSignPage() {
   const { id } = useParams();
+  const { t } = useLanguage();
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
 
@@ -91,13 +93,13 @@ export function DetailSignPage() {
         const data = await res.json();
         setComments(data.comments);
         setCommentText('');
-        triggerToast('Komentar berhasil dikirim!');
+        triggerToast(t('Komentar berhasil dikirim!'));
       } else {
-        triggerToast('Gagal mengirim komentar.');
+        triggerToast(t('Gagal mengirim komentar.'));
       }
     } catch (err) {
       console.error(err);
-      triggerToast('Gagal mengirim komentar.');
+      triggerToast(t('Gagal mengirim komentar.'));
     }
   };
 
@@ -116,18 +118,18 @@ export function DetailSignPage() {
         const data = await res.json();
         setComments(data.comments);
         setEditingCommentId(null);
-        triggerToast('Komentar berhasil diperbarui!');
+        triggerToast(t('Komentar berhasil diperbarui!'));
       } else {
-        triggerToast('Gagal memperbarui komentar.');
+        triggerToast(t('Gagal memperbarui komentar.'));
       }
     } catch (err) {
       console.error(err);
-      triggerToast('Gagal memperbarui komentar.');
+      triggerToast(t('Gagal memperbarui komentar.'));
     }
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus masukan ini?')) {
+    if (window.confirm(t('Apakah Anda yakin ingin menghapus masukan ini?'))) {
       try {
         const res = await fetch(`/api/signs/${id}/comments/${commentId}`, {
           method: 'DELETE'
@@ -135,13 +137,13 @@ export function DetailSignPage() {
         if (res.ok) {
           const data = await res.json();
           setComments(data.comments);
-          triggerToast('Komentar berhasil dihapus.');
+          triggerToast(t('Komentar berhasil dihapus.'));
         } else {
-          triggerToast('Gagal menghapus komentar.');
+          triggerToast(t('Gagal menghapus komentar.'));
         }
       } catch (err) {
         console.error(err);
-        triggerToast('Gagal menghapus komentar.');
+        triggerToast(t('Gagal menghapus komentar.'));
       }
     }
   };
@@ -191,11 +193,11 @@ export function DetailSignPage() {
     if (isLiked) {
       likedArr = likedArr.filter(item => item !== String(id));
       setIsLiked(false);
-      triggerToast('Batal menyukai kosa isyarat.');
+      triggerToast(t('Batal menyukai kosa isyarat.'));
     } else {
       likedArr.push(String(id));
       setIsLiked(true);
-      triggerToast('Menyukai kosa isyarat ini!');
+      triggerToast(t('Menyukai kosa isyarat ini!'));
     }
     localStorage.setItem('liked_signs', JSON.stringify(likedArr));
   };
@@ -213,11 +215,11 @@ export function DetailSignPage() {
     if (isBookmarked) {
       bookmarkedArr = bookmarkedArr.filter(item => item !== String(id));
       setIsBookmarked(false);
-      triggerToast('Batal menyimpan kosa isyarat.');
+      triggerToast(t('Batal menyimpan kosa isyarat.'));
     } else {
       bookmarkedArr.push(String(id));
       setIsBookmarked(true);
-      triggerToast('Kosa isyarat berhasil disimpan!');
+      triggerToast(t('Kosa isyarat berhasil disimpan!'));
     }
     localStorage.setItem('bookmarked_signs', JSON.stringify(bookmarkedArr));
   };
@@ -225,10 +227,10 @@ export function DetailSignPage() {
   const handleShareClick = () => {
     const shareText = `Pelajari kosa isyarat BISINDO untuk kata "${sign.word}" (${sign.region}) di platform Garda Bisindo Digital: ${window.location.href}`;
     navigator.clipboard.writeText(shareText).then(() => {
-      triggerToast('Tautan berhasil disalin ke clipboard!');
+      triggerToast(t('Tautan berhasil disalin ke clipboard!'));
     }).catch(err => {
       console.error('Gagal menyalin:', err);
-      triggerToast('Gagal menyalin tautan.');
+      triggerToast(t('Gagal menyalin tautan.'));
     });
   };
 
@@ -244,7 +246,7 @@ export function DetailSignPage() {
       setAiInsight(data.explanation);
     } catch (error) {
       console.error(error);
-      setAiInsight("Gagal mendapatkan wawasan AI.");
+      setAiInsight(t("Gagal mendapatkan wawasan AI."));
     } finally {
       setIsLoadingAi(false);
     }
@@ -272,7 +274,7 @@ export function DetailSignPage() {
     return (
       <div className="pt-24 min-h-screen bg-slate-50 flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-garda-red border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-slate-500 font-semibold animate-pulse">Memuat detail kosa isyarat...</p>
+        <p className="text-slate-500 font-semibold animate-pulse">{t('Memuat detail kosa isyarat...')}</p>
       </div>
     );
   }
@@ -282,7 +284,7 @@ export function DetailSignPage() {
       <div className="max-w-7xl mx-auto px-6">
         <Link to="/dictionary" className="inline-flex items-center gap-2 text-slate-500 hover:text-garda-red transition-colors mb-8 group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Kembali ke Kamus
+          {t('Kembali ke Kamus')}
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -313,10 +315,10 @@ export function DetailSignPage() {
                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                   <div>
                     <div className="flex items-center gap-3 mb-4">
-                       <span className="px-3 py-1 bg-garda-red/10 text-garda-red text-[10px] font-bold uppercase tracking-widest rounded-full">{sign.category}</span>
+                       <span className="px-3 py-1 bg-garda-red/10 text-garda-red text-[10px] font-bold uppercase tracking-widest rounded-full">{t(sign.category)}</span>
                        <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                          <MapPin className="w-3 h-3" />
-                         {sign.region}
+                         {t(sign.region)}
                        </span>
                     </div>
                     <h1 className="text-5xl md:text-6xl mb-0">{sign.word}</h1>
@@ -356,17 +358,17 @@ export function DetailSignPage() {
 
                <div className="space-y-8">
                   <div>
-                    <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Deskripsi Gerakan</h4>
+                    <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">{t('Deskripsi Gerakan')}</h4>
                     <p className="text-slate-600 text-lg leading-relaxed">{sign.description}</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                      <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Asal-usul (Etimologi)</h4>
+                      <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">{t('Asal-usul (Etimologi)')}</h4>
                       <p className="text-slate-600 leading-relaxed italic">{sign.etymology}</p>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Konteks Penggunaan</h4>
+                      <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">{t('Konteks Penggunaan')}</h4>
                       <p className="text-slate-600 leading-relaxed">{sign.usageContext}</p>
                     </div>
                   </div>
@@ -379,9 +381,9 @@ export function DetailSignPage() {
                      <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-4 text-indigo-600">
                            <Sparkles className="w-5 h-5" />
-                           <span className="text-xs font-bold uppercase tracking-widest">AI Cultural Insight</span>
+                           <span className="text-xs font-bold uppercase tracking-widest">{t('AI Cultural Insight')}</span>
                         </div>
-                        <h4 className="text-xl font-bold mb-4">Wawasan Budaya Digital</h4>
+                        <h4 className="text-xl font-bold mb-4">{t('Wawasan Budaya Digital')}</h4>
                         
                         {aiInsight ? (
                            <motion.p 
@@ -397,10 +399,10 @@ export function DetailSignPage() {
                              disabled={isLoadingAi}
                              className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all disabled:opacity-50 cursor-pointer"
                            >
-                             {isLoadingAi ? "Menganalisis Budaya..." : "Dapatkan Wawasan AI"}
+                             {isLoadingAi ? t("Menganalisis Budaya...") : t("Dapatkan Wawasan AI")}
                            </button>
                         )}
-                        <p className="mt-4 text-[10px] text-slate-400 font-medium">Powered by Gemini AI - Menganalisis konteks regional dan linguistik.</p>
+                        <p className="mt-4 text-[10px] text-slate-400 font-medium">{t('Powered by Gemini AI - Menganalisis konteks regional dan linguistik.')}</p>
                      </div>
                   </div>
                </div>
@@ -410,7 +412,7 @@ export function DetailSignPage() {
             <div className="bg-slate-100/50 rounded-[2.5rem] p-10 border border-slate-200">
                <div className="flex items-center gap-3 mb-6">
                   <MessageSquare className="text-slate-400" />
-                  <h3 className="text-xl font-bold">Diskusi Komunitas</h3>
+                  <h3 className="text-xl font-bold">{t('Diskusi Komunitas')}</h3>
                </div>
                
                <form onSubmit={handleSendComment} className="flex gap-4">
@@ -423,7 +425,7 @@ export function DetailSignPage() {
                   </div>
                   <div className="flex-1">
                      <textarea 
-                       placeholder="Tambahkan catatan atau variasi daerah lain..." 
+                       placeholder={t("Tambahkan catatan atau variasi daerah lain...")} 
                        value={commentText}
                        onChange={e => setCommentText(e.target.value)}
                        className="w-full p-4 rounded-2xl bg-white border border-slate-200 focus:ring-2 focus:ring-garda-red/20 outline-none transition-all text-sm resize-none"
@@ -431,7 +433,7 @@ export function DetailSignPage() {
                        required
                      />
                      <button type="submit" className="mt-4 px-6 py-2 bg-garda-red hover:bg-red-700 text-white rounded-xl font-bold ml-auto block text-sm cursor-pointer transition-colors shadow-md shadow-red-100">
-                       Kirim Masukan
+                       {t('Kirim Masukan')}
                      </button>
                   </div>
                </form>
@@ -439,7 +441,7 @@ export function DetailSignPage() {
                {/* Comments List */}
                <div className="mt-8 space-y-6">
                  {comments.length === 0 ? (
-                   <p className="text-xs text-slate-400 italic text-center">Belum ada diskusi. Jadilah yang pertama memberikan masukan!</p>
+                   <p className="text-xs text-slate-400 italic text-center">{t('Belum ada diskusi. Jadilah yang pertama memberikan masukan!')}</p>
                  ) : (
                     comments.map((comment) => {
                       const isOwner = comment.userName === userProfile?.name || comment.id.startsWith('c_');
@@ -472,14 +474,14 @@ export function DetailSignPage() {
                                     onClick={() => setEditingCommentId(null)}
                                     className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[10px] uppercase tracking-wider cursor-pointer transition-colors"
                                   >
-                                    Batal
+                                    {t('Batal')}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handleUpdateComment(comment.id)}
                                     className="px-3 py-1 bg-garda-red hover:bg-red-700 text-white font-bold rounded-lg text-[10px] uppercase tracking-wider cursor-pointer transition-colors"
                                   >
-                                    Simpan
+                                    {t('Simpan')}
                                   </button>
                                 </div>
                               </div>
@@ -497,7 +499,7 @@ export function DetailSignPage() {
                                         }}
                                         className="hover:text-indigo-600 cursor-pointer transition-colors"
                                       >
-                                        Edit
+                                        {t('Edit')}
                                       </button>
                                     )}
                                     <button
@@ -505,7 +507,7 @@ export function DetailSignPage() {
                                       onClick={() => handleDeleteComment(comment.id)}
                                       className="hover:text-garda-red cursor-pointer transition-colors"
                                     >
-                                      Hapus
+                                      {t('Hapus')}
                                     </button>
                                   </div>
                                 )}
@@ -523,30 +525,30 @@ export function DetailSignPage() {
           {/* Sidebar Section */}
           <div className="space-y-8">
             <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
-               <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">Informan Tuli</h4>
+               <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">{t('Informan Tuli')}</h4>
                <div className="flex items-center gap-4 mb-6">
                   <div className="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden flex items-center justify-center">
                     <User className="w-8 h-8 text-slate-400" />
                   </div>
                   <div>
                     <h5 className="font-bold text-lg">{sign.informant}</h5>
-                    <p className="text-xs text-slate-500">{sign.region}</p>
+                    <p className="text-xs text-slate-500">{t(sign.region)}</p>
                   </div>
                </div>
                <p className="text-xs text-slate-500 leading-relaxed mb-6">
-                  {sign.informant} adalah bagian dari kontributor aktif relawan komunitas Tuli yang berkomitmen tinggi mendokumentasikan bahasa isyarat daerah {sign.region} agar lestari.
+                  {sign.informant} {t('adalah bagian dari kontributor aktif relawan komunitas Tuli yang berkomitmen tinggi mendokumentasikan bahasa isyarat daerah')} {t(sign.region)} {t('agar lestari.')}
                </p>
                <Link to="/profile" className="block w-full py-3 text-center bg-slate-50 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors">
-                 Lihat Profil & Kontribusi
+                 {t('Lihat Profil & Kontribusi')}
                </Link>
             </div>
 
             <div className="bg-garda-navy rounded-[2.5rem] p-8 text-white relative overflow-hidden">
                <div className="relative z-10">
                  <ShieldCheck className="w-10 h-10 text-garda-cyan mb-4" />
-                 <h4 className="font-bold text-xl mb-4">Verifikasi Akurasi</h4>
+                 <h4 className="font-bold text-xl mb-4">{t('Verifikasi Akurasi')}</h4>
                  <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                   Video ini telah divalidasi oleh tim ahli PUSBISINDO untuk memastikan akurasi penggunaan isyarat secara linguistik.
+                   {t('Video ini telah divalidasi oleh tim ahli PUSBISINDO untuk memastikan akurasi penggunaan isyarat secara linguistik.')}
                  </p>
                  <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-garda-cyan">
                    <div className="w-2 h-2 bg-garda-cyan rounded-full animate-pulse" />
@@ -557,12 +559,12 @@ export function DetailSignPage() {
 
             {relatedSigns.length > 0 && (
               <div>
-                 <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">Isyarat Terkait</h4>
-                 <div className="space-y-6">
-                    {relatedSigns.map(rs => (
-                      <SignCard key={rs.id} sign={rs} className="shadow-none border-slate-200" />
-                    ))}
-                 </div>
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">{t('Isyarat Terkait')}</h4>
+                  <div className="space-y-6">
+                     {relatedSigns.map(rs => (
+                       <SignCard key={rs.id} sign={rs} className="shadow-none border-slate-200" />
+                     ))}
+                  </div>
               </div>
             )}
            </div>
@@ -577,5 +579,5 @@ export function DetailSignPage() {
          </div>
        )}
      </div>
-   );
- }
+  );
+}

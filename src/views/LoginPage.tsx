@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, MapPin } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function Button(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const { className, ...rest } = props;
@@ -16,10 +17,9 @@ function Button(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
 type Role = 'admin' | 'informant';
 type AuthMode = 'login' | 'register' | 'forgot';
 
-// Tutorials removed
-
 export function LoginPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<AuthMode>('login');
 
   // Login & Shared State
@@ -42,7 +42,6 @@ export function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -50,7 +49,7 @@ export function LoginPage() {
     setLoading(true);
 
     if (!email.trim() || password.trim().length < 6) {
-      setError('Email dan password (min. 6 karakter) wajib diisi.');
+      setError(t('Email dan password (min. 6 karakter) wajib diisi.'));
       setLoading(false);
       return;
     }
@@ -67,7 +66,7 @@ export function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Terjadi kesalahan saat login.');
+        setError(data.error || t('Terjadi kesalahan saat login.'));
         setLoading(false);
         return;
       }
@@ -98,7 +97,7 @@ export function LoginPage() {
       }
     } catch (err) {
       console.error(err);
-      setError('Gagal terhubung ke backend server.');
+      setError(t('Gagal terhubung ke backend server.'));
     } finally {
       setLoading(false);
     }
@@ -111,7 +110,7 @@ export function LoginPage() {
     setLoading(true);
 
     if (!name.trim() || !email.trim() || !region.trim() || password.trim().length < 6) {
-      setError('Semua data registrasi wajib diisi. Password minimal 6 karakter.');
+      setError(t('Semua data registrasi wajib diisi. Password minimal 6 karakter.'));
       setLoading(false);
       return;
     }
@@ -134,19 +133,19 @@ export function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Terjadi kesalahan saat registrasi.');
+        setError(data.error || t('Terjadi kesalahan saat registrasi.'));
         setLoading(false);
         return;
       }
 
-      setSuccess('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
+      setSuccess(t('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.'));
       setMode('login');
       // Keep email populated to ease login
       setPassword('');
       setShowRegisterPassword(false);
     } catch (err) {
       console.error(err);
-      setError('Gagal terhubung ke backend server.');
+      setError(t('Gagal terhubung ke backend server.'));
     } finally {
       setLoading(false);
     }
@@ -160,7 +159,7 @@ export function LoginPage() {
     setLoading(true);
 
     if (!forgotEmail.trim()) {
-      setError('Masukkan email Anda untuk pemulihan sandi.');
+      setError(t('Masukkan email Anda untuk pemulihan sandi.'));
       setLoading(false);
       return;
     }
@@ -177,7 +176,7 @@ export function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Email tidak terdaftar.');
+        setError(data.error || t('Email tidak terdaftar.'));
         setLoading(false);
         return;
       }
@@ -186,7 +185,7 @@ export function LoginPage() {
       setDemoPassword(data.demoPassword);
     } catch (err) {
       console.error(err);
-      setError('Gagal terhubung ke backend server.');
+      setError(t('Gagal terhubung ke backend server.'));
     } finally {
       setLoading(false);
     }
@@ -219,7 +218,7 @@ export function LoginPage() {
                 className={`flex-1 pb-2 text-center font-bold text-lg border-b-2 transition-all cursor-pointer ${mode === 'login' ? 'border-garda-red text-garda-red' : 'border-transparent text-slate-400 hover:text-slate-600'
                   }`}
               >
-                Masuk
+                {t('Masuk')}
               </button>
               <button
                 type="button"
@@ -227,20 +226,20 @@ export function LoginPage() {
                 className={`flex-1 pb-2 text-center font-bold text-lg border-b-2 transition-all cursor-pointer ${mode === 'register' ? 'border-garda-red text-garda-red' : 'border-transparent text-slate-400 hover:text-slate-600'
                   }`}
               >
-                Daftar
+                {t('Daftar')}
               </button>
             </div>
           )}
 
           <h1 className="text-3xl font-bold mb-2 text-slate-800">
-            {mode === 'login' && 'Login'}
-            {mode === 'register' && 'Registrasi Akun'}
-            {mode === 'forgot' && 'Lupa Password'}
+            {mode === 'login' && t('Login')}
+            {mode === 'register' && t('Registrasi Akun')}
+            {mode === 'forgot' && t('Lupa Password')}
           </h1>
           <p className="text-slate-500 mb-6">
-            {mode === 'login' && 'Masuk untuk mengakses dashboard & profil Anda.'}
-            {mode === 'register' && 'Daftar sebagai anggota atau admin baru platform Garda BISINDO.'}
-            {mode === 'forgot' && 'Masukkan email Anda untuk pemulihan atau melihat kata sandi Anda.'}
+            {mode === 'login' && t('Masuk untuk mengakses dashboard & profil Anda.')}
+            {mode === 'register' && t('Daftar sebagai anggota atau admin baru platform Garda BISINDO.')}
+            {mode === 'forgot' && t('Masukkan email Anda untuk pemulihan atau melihat kata sandi Anda.')}
           </p>
 
           {/* Feedback Messages */}
@@ -267,7 +266,7 @@ export function LoginPage() {
                     : 'text-slate-500 hover:text-slate-700'
                     }`}
                 >
-                  Informan
+                  {t('Informan')}
                 </button>
                 <button
                   type="button"
@@ -277,7 +276,7 @@ export function LoginPage() {
                     : 'text-slate-500 hover:text-slate-700'
                     }`}
                 >
-                  Admin
+                  {t('Admin')}
                 </button>
               </div>
 
@@ -323,17 +322,17 @@ export function LoginPage() {
                     onClick={() => switchMode('forgot')}
                     className="text-xs font-bold text-slate-400 hover:text-garda-red transition-colors cursor-pointer"
                   >
-                    Lupa Password?
+                    {t('Lupa Password?')}
                   </button>
                 </div>
               </div>
 
               <Button type="submit" disabled={loading} className="w-full mt-2 py-4 rounded-2xl">
-                {loading ? 'Memproses...' : 'Masuk'}
+                {loading ? t('Memproses...') : t('Masuk')}
               </Button>
 
               <p className="text-xs text-slate-400 pt-2 text-center">
-                Belum punya akun? <button type="button" onClick={() => switchMode('register')} className="text-garda-red font-bold hover:underline cursor-pointer">Daftar Kontributor</button>
+                {t('Belum punya akun?')} <button type="button" onClick={() => switchMode('register')} className="text-garda-red font-bold hover:underline cursor-pointer">{t('Daftar Kontributor')}</button>
               </p>
             </form>
           )}
@@ -350,7 +349,7 @@ export function LoginPage() {
                     : 'text-slate-500 hover:text-slate-700'
                     }`}
                 >
-                  Informan
+                  {t('Informan')}
                 </button>
                 <button
                   type="button"
@@ -360,12 +359,12 @@ export function LoginPage() {
                     : 'text-slate-500 hover:text-slate-700'
                     }`}
                 >
-                  Admin
+                  {t('Admin')}
                 </button>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2 text-slate-700">Nama Lengkap</label>
+                <label className="block text-sm font-semibold mb-2 text-slate-700">{t('Nama Lengkap')}</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
                   <input
@@ -374,7 +373,7 @@ export function LoginPage() {
                     type="text"
                     required
                     className="w-full pl-12 pr-4 py-3.5 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 focus:ring-garda-red/20 transition-all text-sm text-slate-800"
-                    placeholder="nama lengkap"
+                    placeholder={t('Nama Lengkap')}
                   />
                 </div>
               </div>
@@ -395,7 +394,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2 text-slate-700">Wilayah / Kota Asal</label>
+                <label className="block text-sm font-semibold mb-2 text-slate-700">{t('Wilayah / Kota Asal')}</label>
                 <div className="relative">
                   <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
                   <input
@@ -419,7 +418,7 @@ export function LoginPage() {
                     type={showRegisterPassword ? 'text' : 'password'}
                     required
                     className="w-full pl-12 pr-12 py-3.5 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 focus:ring-garda-red/20 transition-all text-sm text-slate-800"
-                    placeholder="Minimal 6 karakter"
+                    placeholder={t('Minimal 6 karakter')}
                   />
                   <button
                     type="button"
@@ -432,11 +431,11 @@ export function LoginPage() {
               </div>
 
               <Button type="submit" disabled={loading} className="w-full mt-2 py-4 rounded-2xl bg-garda-navy">
-                {loading ? 'Mendaftarkan...' : 'Daftar Akun'}
+                {loading ? t('Mendaftarkan...') : t('Daftar Akun')}
               </Button>
 
               <p className="text-xs text-slate-400 pt-2 text-center">
-                Sudah punya akun? <button type="button" onClick={() => switchMode('login')} className="text-garda-red font-bold hover:underline cursor-pointer">Masuk</button>
+                {t('Sudah punya akun?')} <button type="button" onClick={() => switchMode('login')} className="text-garda-red font-bold hover:underline cursor-pointer">{t('Masuk')}</button>
               </p>
             </form>
           )}
@@ -445,7 +444,7 @@ export function LoginPage() {
           {mode === 'forgot' && (
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2 text-slate-700">Email Terdaftar</label>
+                <label className="block text-sm font-semibold mb-2 text-slate-700">{t('Email Terdaftar')}</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
                   <input
@@ -461,17 +460,17 @@ export function LoginPage() {
 
               {demoPassword && (
                 <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-800 text-sm">
-                  <p className="font-bold mb-1">Simulasi Demo Pemulihan:</p>
-                  <p>Kata sandi akun Anda saat ini: <strong className="text-garda-red font-mono text-base">{demoPassword}</strong></p>
+                  <p className="font-bold mb-1">{t('Simulasi Demo Pemulihan:')}</p>
+                  <p>{t('Kata sandi akun Anda saat ini:')}: <strong className="text-garda-red font-mono text-base">{demoPassword}</strong></p>
                 </div>
               )}
 
               <Button type="submit" disabled={loading} className="w-full mt-2 py-4 rounded-2xl">
-                {loading ? 'Mengirim...' : 'Kirim Permintaan Pemulihan'}
+                {loading ? t('Mengirim...') : t('Kirim Permintaan Pemulihan')}
               </Button>
 
               <p className="text-xs text-slate-400 pt-2 text-center">
-                Kembali ke <button type="button" onClick={() => switchMode('login')} className="text-garda-red font-bold hover:underline cursor-pointer">Halaman Login</button>
+                {t('Kembali ke')} <button type="button" onClick={() => switchMode('login')} className="text-garda-red font-bold hover:underline cursor-pointer">{t('Halaman Login')}</button>
               </p>
             </form>
           )}

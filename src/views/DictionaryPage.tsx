@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Search, Grid, List as ListIcon, Bookmark, Heart, ChevronDown, SlidersHorizontal, RotateCcw, Sparkles, Mic } from 'lucide-react';
+import { Search, Grid, List as ListIcon, ChevronDown, SlidersHorizontal, RotateCcw, Sparkles, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SignCard } from '@/src/components/SignCard';
 import type { Sign } from '@/src/types';
 import { cn } from '@/src/lib/utils';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const HANDSHAPES = [
   'Telapak Terbuka',
@@ -22,6 +23,7 @@ const LOCATIONS = [
 ];
 
 export function DictionaryPage() {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [selectedRegion, setSelectedRegion] = useState('Nasional');
@@ -114,7 +116,7 @@ export function DictionaryPage() {
   const startSpeechRecognition = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Browser Anda tidak mendukung fitur Pencarian Suara.');
+      alert(t('Browser Anda tidak mendukung fitur Pencarian Suara.'));
       return;
     }
 
@@ -162,8 +164,8 @@ export function DictionaryPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
             <div>
-              <h1 className="text-4xl md:text-5xl mb-2 font-display">Kamus Digital <span className="text-garda-red font-bold">BISINDO</span></h1>
-              <p className="text-slate-500">Jelajahi ribuan arsip kosa isyarat dari berbagai daerah di Indonesia.</p>
+              <h1 className="text-4xl md:text-5xl mb-2 font-display">{t('Kamus Digital')} <span className="text-garda-red font-bold">BISINDO</span></h1>
+              <p className="text-slate-500">{t('Jelajahi ribuan arsip kosa isyarat dari berbagai daerah di Indonesia.')}</p>
             </div>
             
             <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
@@ -188,7 +190,7 @@ export function DictionaryPage() {
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input 
                     type="text" 
-                    placeholder={isListening ? "Mendengarkan..." : "Cari kata (contoh: Terima Kasih, Rumah, Makan...)"}
+                    placeholder={isListening ? t("Mendengarkan...") : t("Cari kata (contoh: Terima Kasih, Rumah, Makan...)")}
                     className={cn(
                       "w-full pl-12 pr-12 py-4 bg-slate-100 border-none rounded-2xl focus:ring-2 focus:ring-garda-red/20 transition-all outline-none text-lg",
                       isListening && "ring-2 ring-garda-red/40 bg-red-50/20"
@@ -203,7 +205,7 @@ export function DictionaryPage() {
                       "absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl text-slate-400 hover:text-garda-red hover:bg-slate-200/50 transition-all cursor-pointer",
                       isListening && "text-garda-red bg-red-50 animate-pulse"
                     )}
-                    title="Cari dengan Suara (Speech-to-Sign)"
+                    title={t("Cari dengan Suara (Speech-to-Sign)")}
                   >
                     <Mic className="w-5 h-5" />
                   </button>
@@ -221,7 +223,7 @@ export function DictionaryPage() {
                     )}
                   >
                     <SlidersHorizontal className="w-4 h-4" />
-                    <span>Filter Visual</span>
+                    <span>{t('Filter Visual')}</span>
                     {(selectedHandshape || selectedLocation) && (
                       <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                     )}
@@ -233,7 +235,7 @@ export function DictionaryPage() {
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                     >
-                      <option value="Semua">Semua Kategori</option>
+                      <option value="Semua">{t('Semua Kategori')}</option>
                       {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                     </select>
                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
@@ -245,7 +247,7 @@ export function DictionaryPage() {
                       value={selectedRegion}
                       onChange={(e) => setSelectedRegion(e.target.value)}
                     >
-                      <option value="Nasional">Semua Wilayah</option>
+                      <option value="Nasional">{t('Semua Wilayah')}</option>
                       {regions.filter(r => r.name !== 'Nasional').map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
                     </select>
                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
@@ -267,7 +269,7 @@ export function DictionaryPage() {
                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-3">
                       <div className="flex items-center gap-2 text-slate-800">
                         <Sparkles className="w-5 h-5 text-garda-red" />
-                        <h4 className="font-bold text-base">Pencarian Parameter Visual (Leksikografis)</h4>
+                        <h4 className="font-bold text-base">{t('Pencarian Parameter Visual (Leksikografis)')}</h4>
                       </div>
                       {(selectedHandshape || selectedLocation) && (
                         <button
@@ -278,7 +280,7 @@ export function DictionaryPage() {
                           className="text-xs font-bold text-garda-red hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <RotateCcw className="w-3 h-3" />
-                          Reset Filter Visual
+                          {t('Reset Filter Visual')}
                         </button>
                       )}
                     </div>
@@ -286,7 +288,7 @@ export function DictionaryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Handshapes */}
                       <div>
-                        <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Bentuk Tangan (Handshape)</h5>
+                        <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('Bentuk Tangan (Handshape)')}</h5>
                         <div className="flex flex-wrap gap-2">
                           {HANDSHAPES.map((shape) => {
                             const isSelected = selectedHandshape === shape;
@@ -301,7 +303,7 @@ export function DictionaryPage() {
                                     : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                                 )}
                               >
-                                {shape}
+                                {t(shape)}
                               </button>
                             );
                           })}
@@ -310,7 +312,7 @@ export function DictionaryPage() {
 
                       {/* Locations */}
                       <div>
-                        <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Lokasi Gerakan (Location)</h5>
+                        <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('Lokasi Gerakan (Location)')}</h5>
                         <div className="flex flex-wrap gap-2">
                           {LOCATIONS.map((loc) => {
                             const isSelected = selectedLocation === loc;
@@ -325,7 +327,7 @@ export function DictionaryPage() {
                                     : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                                 )}
                               >
-                                {loc}
+                                {t(loc)}
                               </button>
                             );
                           })}
@@ -334,7 +336,7 @@ export function DictionaryPage() {
                     </div>
                     
                     <p className="text-xs text-slate-400 italic">
-                      * Pencarian visual mencocokkan isyarat berdasarkan cara mempraktikkannya. Sangat berguna untuk Tuli dan penerjemah.
+                      {t('* Pencarian visual mencocokkan isyarat berdasarkan cara mempraktikkannya. Sangat berguna untuk Tuli dan penerjemah.')}
                     </p>
                   </div>
                 </motion.div>
@@ -350,7 +352,7 @@ export function DictionaryPage() {
           {isLoading ? (
             <div className="py-20 text-center flex flex-col items-center justify-center">
               <div className="w-12 h-12 border-4 border-garda-red border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-slate-500 font-semibold animate-pulse">Memuat kamus isyarat...</p>
+              <p className="text-slate-500 font-semibold animate-pulse">{t('Memuat kamus isyarat...')}</p>
             </div>
           ) : filteredSigns.length > 0 ? (
             <AnimatePresence mode="popLayout">
@@ -375,8 +377,8 @@ export function DictionaryPage() {
                <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
                   <Search className="w-10 h-10" />
                </div>
-               <h3 className="text-2xl font-bold mb-2">Tidak ditemukan kosa isyarat</h3>
-               <p className="text-slate-500">Coba gunakan kata kunci lain atau ubah filter pencarian.</p>
+               <h3 className="text-2xl font-bold mb-2">{t('Tidak ditemukan kosa isyarat')}</h3>
+               <p className="text-slate-500">{t('Coba gunakan kata kunci lain atau ubah filter pencarian.')}</p>
             </div>
           )}
         </div>
@@ -384,4 +386,3 @@ export function DictionaryPage() {
     </div>
   );
 }
-
