@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { put, list } from '@vercel/blob';
 
 // Use /tmp in Vercel production since the root filesystem is read-only.
 const isVercel = process.env.VERCEL === '1';
@@ -163,7 +164,6 @@ export async function loadSigns(): Promise<any[]> {
       if (data && data.result) {
         return JSON.parse(data.result);
       } else {
-        // Pre-populate Vercel KV with hydrated default signs
         const hydratedSigns = defaultSigns.map(s => ({
           ...s,
           comments: [
@@ -188,6 +188,27 @@ export async function loadSigns(): Promise<any[]> {
       }
     } catch (e) {
       console.error("Error loading signs from Vercel KV:", e);
+    }
+  }
+
+  // 2. Try Vercel Blob Storage if available
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  if (blobToken) {
+    try {
+      const { blobs } = await list({ prefix: 'db_data/signs.json', token: blobToken });
+      if (blobs && blobs.length > 0) {
+        const latest = blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())[0];
+        const response = await fetch(`${latest.url}?t=${Date.now()}`, { cache: 'no-store' });
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            memoryDb = data;
+            return data;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error loading signs from Vercel Blob:", e);
     }
   }
 
@@ -277,7 +298,22 @@ export async function saveSigns(signsList: any[]): Promise<void> {
     }
   }
 
-  // 2. Save to Local Filesystem
+  // 2. Save to Vercel Blob Storage if available
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  if (blobToken) {
+    try {
+      await put('db_data/signs.json', JSON.stringify(signsList), {
+        access: 'public',
+        addRandomSuffix: true,
+        token: blobToken
+      });
+      console.log("Berhasil menyimpan data kosa isyarat ke Vercel Blob Storage!");
+    } catch (e) {
+      console.error("Error saving signs to Vercel Blob:", e);
+    }
+  }
+
+  // 3. Save to Local Filesystem
   try {
     fs.writeFileSync(SIGNS_FILE, JSON.stringify(signsList, null, 2));
   } catch (e) {

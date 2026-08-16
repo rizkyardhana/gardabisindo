@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { put, list } from '@vercel/blob';
 
 // Use /tmp in Vercel production since the root filesystem is read-only.
 const isVercel = process.env.VERCEL === '1';
@@ -41,7 +42,6 @@ export async function loadCategories(): Promise<any[]> {
       if (data && data.result) {
         return JSON.parse(data.result);
       } else {
-        // Pre-populate Vercel KV with default categories
         await saveCategories(defaultCategories);
         return defaultCategories;
       }
@@ -50,7 +50,28 @@ export async function loadCategories(): Promise<any[]> {
     }
   }
 
-  // 2. Fallback to Local Filesystem
+  // 2. Try Vercel Blob Storage if available
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  if (blobToken) {
+    try {
+      const { blobs } = await list({ prefix: 'db_data/categories.json', token: blobToken });
+      if (blobs && blobs.length > 0) {
+        const latest = blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())[0];
+        const response = await fetch(`${latest.url}?t=${Date.now()}`, { cache: 'no-store' });
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            memoryDb = data;
+            return data;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error loading categories from Vercel Blob:", e);
+    }
+  }
+
+  // 3. Fallback to Local Filesystem
   if (memoryDb) return memoryDb;
   
   try {
@@ -98,7 +119,21 @@ export async function saveCategories(categoriesList: any[]): Promise<void> {
     }
   }
 
-  // 2. Save to Local Filesystem
+  // 2. Save to Vercel Blob Storage if available
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  if (blobToken) {
+    try {
+      await put('db_data/categories.json', JSON.stringify(categoriesList), {
+        access: 'public',
+        addRandomSuffix: true,
+        token: blobToken
+      });
+    } catch (e) {
+      console.error("Error saving categories to Vercel Blob:", e);
+    }
+  }
+
+  // 3. Save to Local Filesystem
   try {
     fs.writeFileSync(CATEGORIES_FILE, JSON.stringify(categoriesList, null, 2));
   } catch (e) {
