@@ -4,7 +4,11 @@ import { loadSigns, saveSigns } from '@/src/lib/signsDb';
 export async function GET() {
   try {
     const signs = await loadSigns();
-    return NextResponse.json(signs);
+    return NextResponse.json(signs, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+      }
+    });
   } catch (e: any) {
     console.error("Gagal memuat kosa isyarat:", e);
     return NextResponse.json({ error: "Gagal memuat kosa isyarat dari database." }, { status: 500 });

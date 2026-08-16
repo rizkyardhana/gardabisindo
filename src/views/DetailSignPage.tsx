@@ -302,13 +302,16 @@ export function DetailSignPage() {
                 />
               ) : (
                 <video 
+                  key={sign.videoUrl}
                   className="w-full h-full object-contain"
-                  src={sign.videoUrl}
                   controls
-                  autoPlay
-                  muted
                   playsInline
-                />
+                  preload="auto"
+                  poster={sign.thumbnailUrl || '/bisindo_gesture_placeholder.png'}
+                >
+                  <source src={sign.videoUrl} type={sign.videoUrl?.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
+                  <source src={sign.videoUrl} />
+                </video>
               )}
             </div>
 

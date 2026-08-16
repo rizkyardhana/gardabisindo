@@ -1776,15 +1776,16 @@ export function DashboardPage() {
                   {/* Video Player */}
                   <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 shadow-inner group aspect-video">
                     <video
-                      key={previewSign.id}
-                      src={previewSign.videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"}
+                      key={previewSign.videoUrl || previewSign.id}
                       className="w-full h-full object-cover"
                       controls
-                      autoPlay
-                      muted
-                      loop
                       playsInline
-                    />
+                      preload="auto"
+                      poster={previewSign.thumbnailUrl || '/bisindo_gesture_placeholder.png'}
+                    >
+                      <source src={previewSign.videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"} type={previewSign.videoUrl?.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
+                      <source src={previewSign.videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"} />
+                    </video>
                   </div>
 
                   {/* Meta Details */}
