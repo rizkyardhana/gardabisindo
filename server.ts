@@ -24,7 +24,7 @@ export async function createServer() {
       express.json()(req, res, next);
     }
   });
-  
+
   // Serve uploaded videos statically
   const uploadDir = process.env.VERCEL
     ? path.join("/tmp", "uploads")
@@ -62,10 +62,10 @@ export async function createServer() {
         console.log(`Video uploaded to Vercel Blob: ${blob.url}`);
         return res.json({ success: true, videoUrl: blob.url });
       }
-      
+
       const filePath = path.join(uploadDir, filename);
       fs.writeFileSync(filePath, req.body);
-      
+
       console.log(`Video uploaded successfully to local storage: ${filename}`);
       res.json({ success: true, videoUrl: `/uploads/${filename}` });
     } catch (e: any) {
@@ -169,9 +169,9 @@ export async function createServer() {
 
     try {
       const usersDb = await loadUsers();
-      const user = usersDb.find(u => 
-        u.email.toLowerCase() === email.toLowerCase() && 
-        u.password === password && 
+      const user = usersDb.find(u =>
+        u.email.toLowerCase() === email.toLowerCase() &&
+        u.password === password &&
         u.role === role
       );
 
@@ -259,7 +259,7 @@ export async function createServer() {
       res.status(500).json({ error: "Gagal menghapus pengguna." });
     }
   });
-  
+
   // Categories endpoints
   app.get("/api/categories", async (req, res) => {
     try {
@@ -282,7 +282,7 @@ export async function createServer() {
       if (exists) {
         return res.status(400).json({ error: "Kategori tersebut sudah terdaftar." });
       }
-      
+
       const newCategory = {
         id: Date.now(),
         name,
@@ -337,7 +337,7 @@ export async function createServer() {
       if (exists) {
         return res.status(400).json({ error: "Wilayah tersebut sudah terdaftar." });
       }
-      
+
       const newRegion = {
         id: Date.now(),
         name
@@ -410,7 +410,7 @@ export async function createServer() {
       if (index === -1) {
         return res.status(404).json({ error: "Isyarat tidak ditemukan." });
       }
-      
+
       signsDb[index] = { ...signsDb[index], ...updatedFields };
       await saveSigns(signsDb);
       res.json({ success: true, sign: signsDb[index] });
@@ -511,7 +511,7 @@ export async function createServer() {
 
   app.post("/api/ai/explain", async (req, res) => {
     const { word, region } = req.body;
-    
+
     if (!genAI) {
       // Fallback: Generate a high-quality mock linguistic/cultural explanation based on the word and region
       const explanations: Record<string, string> = {
@@ -533,13 +533,13 @@ export async function createServer() {
     }
 
     try {
-      const response = await genAI.models.generateContent({ 
+      const response = await genAI.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Berikan penjelasan singkat dan menarik tentang kosa isyarat BISINDO untuk kata "${word}" dari daerah "${region}". Fokus pada aspek budaya, sejarah, atau makna filosofis di balik gerakan tersebut. Gunakan bahasa Indonesia yang profesional dan ramah komunitas Tuli. Maksimal 3 kalimat.`
       });
-      
+
       const text = response.text;
-      
+
       res.json({ explanation: text });
     } catch (error) {
       console.error("Gemini Error:", error);

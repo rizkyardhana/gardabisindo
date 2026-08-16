@@ -1644,6 +1644,7 @@ export function DashboardPage() {
                         <video
                           src={recordedVideoUrl}
                           controls
+                          playsInline
                           className="w-full h-full object-cover"
                         />
                       ) : stream ? (

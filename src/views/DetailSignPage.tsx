@@ -307,6 +307,7 @@ export function DetailSignPage() {
                   controls
                   autoPlay
                   muted
+                  playsInline
                 />
               )}
             </div>
